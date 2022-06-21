@@ -1,0 +1,60 @@
+{
+  "env": {
+      "browser": true,
+      "es2021": true,
+      "node": true
+  },
+  "extends": [
+      "eslint:recommended",
+      "plugin:vue/essential",
+      "plugin:@typescript-eslint/recommended",
+      "@nuxtjs/eslint-config-typescript"
+  ],
+  "parserOptions": {
+      "ecmaVersion": "latest",
+      "parser": "@typescript-eslint/parser",
+      "sourceType": "module"
+  },
+  "plugins": [
+      "vue",
+      "@typescript-eslint"
+  ],
+  "rules": {
+    // 未使用変数はwarn
+    "@typescript-eslint/no-unused-vars": "warn",
+    // single word の命名を許可
+    "vue/multi-word-component-names": "off",
+    // vue2 用の key rule を無効化
+    "vue/no-v-for-template-key": "off",
+    // template に複数のHTMLタグの指定を許可 (vue3 向け)
+    "vue/no-multiple-template-root": "off",
+    // 複数の v-model を許可 (vue3 向け)
+    "vue/no-v-model-argument": "off",
+
+    // HTMLタグの属性の個数制限
+    "vue/max-attributes-per-line": [
+      "error",
+      {
+        "singleline": { "max": 3 },
+        "multiline": { "max": 1 }
+      }
+    ],
+    // JS配列のカンマを強制
+    "comma-dangle": [
+      "error",
+      "only-multiline"
+    ],
+    // インデントを2スペ、switchのときもインデントを使用する
+    "indent": [
+      "error",
+      2,
+      { "SwitchCase": 1 }
+    ],
+    // 改行スタイルはLFにする
+    "linebreak-style": ["error", "unix"],
+    // シングルクオートを使用する
+    "quotes": ["error", "single"],
+    // セミコロンは禁止
+    "semi": ["error", "never"]
+  }
+}
