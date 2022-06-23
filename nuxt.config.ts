@@ -20,6 +20,10 @@ export default defineNuxtConfig({
   vite: {
     plugins: [eslintPlugin({
       fix: true,
-    })]
+    })],
+  },
+
+  build: {
+    transpile: ['kysely', 'better-sqlite3'],
   },
 })

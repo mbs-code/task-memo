@@ -11,7 +11,10 @@
   },
   "dependencies": {
     "@tauri-apps/api": "^1.0.1",
-    "nuxt": "3.0.0-rc.4"
+    "better-sqlite3": "^7.5.3",
+    "kysely": "^0.19.3",
+    "nuxt": "3.0.0-rc.4",
+    "tauri-plugin-sql-api": "github:tauri-apps/tauri-plugin-sql#d8ea61f2cbe2dfc9bf0947bab87b1547dcc945d4"
   },
   "devDependencies": {
     "@nuxtjs/eslint-config-typescript": "^10.0.0",
