@@ -8,23 +8,24 @@
 </template>
 
 <script setup lang="ts">
-import { db, migrator } from '~~/src/databases/db'
+import { db, migrator, Database } from '~~/src/databases/db'
 
 onMounted(async () => {
-  const { results } = await migrator.migrateToLatest()
-  console.log(results)
+  await Database.dbWipe()
+  await migrator.migrateToLatest()
 
-  const res = await db.insertInto('persons').values({
-    first_name: 'ファースト',
-    last_name: null,
+  const res = await db.insertInto('reports').values({
+    text: 'テキスト',
+    created_at: new Date(),
+    updated_at: new Date(),
   }).executeTakeFirst()
   console.log(res)
 
-  const person = await db
-    .selectFrom('persons')
+  const report = await db
+    .selectFrom('reports')
     .selectAll()
     .where('id', '=', Number(res.insertId))
     .executeTakeFirst()
-  console.log(person)
+  console.log(report)
 })
 </script>

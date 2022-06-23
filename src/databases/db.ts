@@ -8,21 +8,21 @@ import {
 import { TauriSqliteDialect } from './libs/TauriSqliteDialect'
 import { BuildinMigrationProvider } from './libs/BuildinMigrationProvider'
 
-import { Persons } from './models/Persons'
-import * as CreatePersonsTable from './migrations/20220623_create_persons_table'
+import { Report } from './models/Report'
+import * as CreateInitTable from './migrations/20220623_create_init_table'
 
 // tables
 export interface Tables {
-  persons: Persons
+  reports: Report
 }
 
 // migrations
 export const migrations: Record<string, Migration> = {
-  '20220623_create_persons_table': CreatePersonsTable,
+  '20220623_create_init_table': CreateInitTable,
 }
 
 // singleton connection
-class Database {
+export class Database {
   static path = 'sqlite:./test.db'
 
   static #instance: Kysely<Tables>
@@ -63,6 +63,16 @@ class Database {
       this.#instance = null
       this.#migrator = null
     }
+  }
+
+  static async dbWipe () {
+    // 全テーブルの削除
+    const tables = await db.introspection.getTables()
+    for (const table of tables) {
+      await db.schema.dropTable(table.name).execute()
+    }
+    await db.schema.dropTable('kysely_migration').execute()
+    await db.schema.dropTable('kysely_migration_lock').execute()
   }
 }
 
