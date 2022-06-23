@@ -66,8 +66,23 @@ class TauriSqliteConnection implements DatabaseConnection {
     if (sql.startsWith('select')) {
       const res = await this.#db.select(sql, parameters as unknown[])
 
+      const transforms = (res as unknown[])
+        .map((item) => {
+          const transItem = Object.entries(item)
+            .map(([key, value]) => {
+              // 日付TEXT を DATE に変換する
+              const fmtValue = key.endsWith('_at')
+                ? new Date(value)
+                : value
+
+              return [key, fmtValue]
+            })
+
+          return Object.fromEntries(transItem)
+        })
+
       return {
-        rows: res as O[],
+        rows: transforms as unknown as O[],
       }
     } else {
       const res = await this.#db.execute(sql, parameters as unknown[])
