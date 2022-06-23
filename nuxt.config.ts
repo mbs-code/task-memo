@@ -17,6 +17,10 @@ export default defineNuxtConfig({
     },
   },
 
+  css: [
+    '@/assets/css/index.scss',
+  ],
+
   vite: {
     plugins: [eslintPlugin({
       fix: true,
@@ -24,6 +28,10 @@ export default defineNuxtConfig({
   },
 
   build: {
-    transpile: ['kysely', 'better-sqlite3'],
+    transpile: [
+      'primevue',
+      'kysely',
+      'better-sqlite3',
+    ],
   },
 })

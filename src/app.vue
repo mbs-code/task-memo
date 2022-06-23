@@ -1,5 +1,8 @@
 <template>
   <div>
+    <div class="m-2">
+      <Button label="Submit" />
+    </div>
     <NuxtWelcome />
   </div>
 </template>
