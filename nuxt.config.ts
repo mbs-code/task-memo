@@ -14,6 +14,9 @@ export default defineNuxtConfig({
       script: [
         !isProduct && { src: 'http://localhost:8098' }, // vue devtools
       ],
+      htmlAttrs: {
+        style: 'font-size: 16px',
+      },
     },
   },
 
@@ -24,6 +27,10 @@ export default defineNuxtConfig({
   },
 
   build: {
-    transpile: ['kysely', 'better-sqlite3'],
+    transpile: [
+      'primevue',
+      'kysely',
+      'better-sqlite3',
+    ],
   },
 })
