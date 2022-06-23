@@ -1,28 +1,70 @@
-import * as Kysely from 'kysely'
+/* eslint-disable import/named */
+
+import {
+  Kysely,
+  Migration,
+  Migrator,
+} from 'kysely'
 import { TauriSqliteDialect } from './libs/TauriSqliteDialect'
-import { Person } from './models/Person'
+import { BuildinMigrationProvider } from './libs/BuildinMigrationProvider'
+
+import { Persons } from './models/Persons'
+import * as CreatePersonsTable from './migrations/20220623_create_persons_table'
 
 // tables
-interface Tables {
-  person: Person
+export interface Tables {
+  persons: Persons
+}
+
+// migrations
+export const migrations: Record<string, Migration> = {
+  '20220623_create_persons_table': CreatePersonsTable,
 }
 
 // singleton connection
 class Database {
-  private static instance: Kysely.Kysely<Tables>
+  static path = 'sqlite:./test.db'
+
+  static #instance: Kysely<Tables>
+  static #migrator: Migrator
 
   static getInstance () {
-    if (!Database.instance) {
-      const db = new Kysely.Kysely<Tables>({
+    if (!this.#instance) {
+      const db = new Kysely<Tables>({
         dialect: new TauriSqliteDialect({
-          path: 'sqlite:./test.db',
+          path: this.path,
         })
       })
-      Database.instance = db
+
+      const migrator = new Migrator({
+        db,
+        provider: new BuildinMigrationProvider()
+      })
+
+      this.#instance = db
+      this.#migrator = migrator
     }
 
-    return Database.instance
+    return this.#instance
+  }
+
+  static getMigrator () {
+    if (!this.#migrator) {
+      this.getInstance()
+    }
+
+    return this.#migrator
+  }
+
+  static async destroy () {
+    const db = this.#instance
+    if (db) {
+      await db.destroy()
+      this.#instance = null
+      this.#migrator = null
+    }
   }
 }
 
-export default Database.getInstance()
+export const db = Database.getInstance()
+export const migrator = Database.getMigrator()

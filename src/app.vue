@@ -5,13 +5,23 @@
 </template>
 
 <script setup lang="ts">
-import db from '~~/src/databases/db'
+import { db, migrator } from '~~/src/databases/db'
 
 onMounted(async () => {
-  const res = await db.insertInto('person').values({
+  const { results } = await migrator.migrateToLatest()
+  console.log(results)
+
+  const res = await db.insertInto('persons').values({
     first_name: 'ファースト',
     last_name: null,
   }).executeTakeFirst()
   console.log(res)
+
+  const person = await db
+    .selectFrom('persons')
+    .selectAll()
+    .where('id', '=', Number(res.insertId))
+    .executeTakeFirst()
+  console.log(person)
 })
 </script>
