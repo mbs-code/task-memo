@@ -14,11 +14,12 @@ export default defineNuxtConfig({
       script: [
         !isProduct && { src: 'http://localhost:8098' }, // vue devtools
       ],
-      htmlAttrs: {
-        style: 'font-size: 16px',
-      },
     },
   },
+
+  css: [
+    '@/assets/css/index.scss',
+  ],
 
   vite: {
     plugins: [eslintPlugin({
