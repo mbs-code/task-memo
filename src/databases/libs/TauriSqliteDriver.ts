@@ -22,7 +22,7 @@ export class TauriSqliteDriver implements Driver {
 
   async init (): Promise<void> {
     this.#db = await TauriDatabase.load(this.#config.path)
-    this.#connection = new TauriSqliteConnection(this.#db)
+    this.#connection = new TauriSqliteConnection(this.#config, this.#db)
   }
 
   async acquireConnection (): Promise<DatabaseConnection> {
@@ -54,20 +54,45 @@ export class TauriSqliteDriver implements Driver {
 }
 
 class TauriSqliteConnection implements DatabaseConnection {
+  readonly #config: TauriSqliteDialectConfig
   readonly #db: TauriDatabase
 
-  constructor (db: TauriDatabase) {
+  constructor (config: TauriSqliteDialectConfig, db: TauriDatabase) {
+    this.#config = config
     this.#db = db
   }
 
   async executeQuery<O> (compiledQuery: CompiledQuery): Promise<QueryResult<O>> {
     const { sql, parameters } = compiledQuery
+    if (this.#config.debug) {
+      // eslint-disable-next-line no-console
+      console.debug(sql, parameters)
+    }
 
     if (sql.startsWith('select')) {
       const res = await this.#db.select(sql, parameters as unknown[])
 
+      const transforms = (res as unknown[])
+        .map((item) => {
+          const transItem = Object.entries(item)
+            .map(([key, value]) => {
+              let fmtValue = value
+              if (key.endsWith('_at')) {
+                // text -> date 変換
+                fmtValue = fmtValue != null ? new Date(value) : null
+              } else if (key.endsWith('is_')) {
+                // integer -> boolean 変換
+                fmtValue = fmtValue != null ? Boolean(value) : null
+              }
+
+              return [key, fmtValue]
+            })
+
+          return Object.fromEntries(transItem)
+        })
+
       return {
-        rows: res as O[],
+        rows: transforms as unknown as O[],
       }
     } else {
       const res = await this.#db.execute(sql, parameters as unknown[])

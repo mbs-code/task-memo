@@ -8,22 +8,33 @@ import {
 import { TauriSqliteDialect } from './libs/TauriSqliteDialect'
 import { BuildinMigrationProvider } from './libs/BuildinMigrationProvider'
 
-import { Persons } from './models/Persons'
-import * as CreatePersonsTable from './migrations/20220623_create_persons_table'
+import * as CreateInitTable from './migrations/20220623_create_init_table'
+
+import { Report } from '~~/src/databases/models/Report'
+import { Tag } from '~~/src/databases/models/Tag'
+import { ReportTag } from '~~/src/databases/models/ReportTag'
+import { Bookmark } from '~~/src/databases/models/Bookmark'
+
+export type SystemColumns = 'id' | 'created_at' | 'updated_at' | 'deleted_at'
 
 // tables
 export interface Tables {
-  persons: Persons
+  reports: Report
+  tags: Tag
+  report_tags: ReportTag
+
+  bookmarks: Bookmark
 }
 
 // migrations
 export const migrations: Record<string, Migration> = {
-  '20220623_create_persons_table': CreatePersonsTable,
+  '20220623_create_init_table': CreateInitTable,
 }
 
 // singleton connection
-class Database {
+export class Database {
   static path = 'sqlite:./test.db'
+  static debug = false
 
   static #instance: Kysely<Tables>
   static #migrator: Migrator
@@ -33,6 +44,7 @@ class Database {
       const db = new Kysely<Tables>({
         dialect: new TauriSqliteDialect({
           path: this.path,
+          debug: this.debug,
         })
       })
 
@@ -64,7 +76,16 @@ class Database {
       this.#migrator = null
     }
   }
-}
 
-export const db = Database.getInstance()
-export const migrator = Database.getMigrator()
+  static async dbWipe () {
+    const db = this.#instance
+
+    // 全テーブルの削除
+    const tables = await db.introspection.getTables()
+    for (const table of tables) {
+      await db.schema.dropTable(table.name).execute()
+    }
+    await db.schema.dropTable('kysely_migration').execute()
+    await db.schema.dropTable('kysely_migration_lock').execute()
+  }
+}
