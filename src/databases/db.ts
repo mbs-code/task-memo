@@ -15,6 +15,8 @@ import { Tag } from '~~/src/databases/models/Tag'
 import { ReportTag } from '~~/src/databases/models/ReportTag'
 import { Bookmark } from '~~/src/databases/models/Bookmark'
 
+export type SystemColumns = 'id' | 'created_at' | 'updated_at' | 'deleted_at'
+
 // tables
 export interface Tables {
   reports: Report
