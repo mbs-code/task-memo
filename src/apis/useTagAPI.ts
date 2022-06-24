@@ -1,5 +1,5 @@
-import { DeleteResult } from 'kysely'
-import { Database, SystemColumns } from '~~/src/databases/db'
+import { DeleteResult, Kysely } from 'kysely'
+import { SystemColumns, Tables } from '~~/src/databases/db'
 import { Tag } from '~~/src/databases/models/Tag'
 
 export type SeatchTag = {
@@ -11,10 +11,7 @@ export type SeatchTag = {
 
 export type FormTag = Omit<Tag, SystemColumns | 'path'>
 
-export const useTagAPI = () => {
-  const db = Database.getInstance()
-  onBeforeUnmount(async () => { await db.destroy() })
-
+export const useTagAPI = (db: Kysely<Tables>) => {
   const getAll = async (params?: SeatchTag) => {
     // タグ配列を取得する
     const tags = await db.selectFrom('tags')
@@ -32,6 +29,16 @@ export const useTagAPI = () => {
     const tag = await db.selectFrom('tags')
       .selectAll()
       .where('id', '=', tagId)
+      .executeTakeFirstOrThrow()
+
+    return { ...tag }
+  }
+
+  const getByName = async (tagName: string) => {
+    // タグを取得する
+    const tag = await db.selectFrom('tags')
+      .selectAll()
+      .where('name', '=', tagName)
       .executeTakeFirstOrThrow()
 
     return { ...tag }
@@ -206,6 +213,7 @@ export const useTagAPI = () => {
   return {
     getAll,
     get,
+    getByName,
     create,
     update,
     remove,

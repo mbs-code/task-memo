@@ -22,7 +22,7 @@ export class TauriSqliteDriver implements Driver {
 
   async init (): Promise<void> {
     this.#db = await TauriDatabase.load(this.#config.path)
-    this.#connection = new TauriSqliteConnection(this.#db)
+    this.#connection = new TauriSqliteConnection(this.#config, this.#db)
   }
 
   async acquireConnection (): Promise<DatabaseConnection> {
@@ -54,14 +54,20 @@ export class TauriSqliteDriver implements Driver {
 }
 
 class TauriSqliteConnection implements DatabaseConnection {
+  readonly #config: TauriSqliteDialectConfig
   readonly #db: TauriDatabase
 
-  constructor (db: TauriDatabase) {
+  constructor (config: TauriSqliteDialectConfig, db: TauriDatabase) {
+    this.#config = config
     this.#db = db
   }
 
   async executeQuery<O> (compiledQuery: CompiledQuery): Promise<QueryResult<O>> {
     const { sql, parameters } = compiledQuery
+    if (this.#config.debug) {
+      // eslint-disable-next-line no-console
+      console.debug(sql, parameters)
+    }
 
     if (sql.startsWith('select')) {
       const res = await this.#db.select(sql, parameters as unknown[])

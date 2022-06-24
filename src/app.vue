@@ -8,16 +8,19 @@
 </template>
 
 <script setup lang="ts">
-import { db, migrator, Database } from '~~/src/databases/db'
+import { Database } from '~~/src/databases/db'
 import { useReportAPI } from '~~/src/apis/useReportAPI'
 import { useTagAPI } from '~~/src/apis/useTagAPI'
 
 onMounted(async () => {
-  await Database.dbWipe()
-  await migrator.migrateToLatest()
+  Database.debug = true
+  const db = Database.getInstance()
 
-  const tagAPI = useTagAPI()
-  const reportAPI = useReportAPI()
+  await Database.dbWipe()
+  await Database.getMigrator().migrateToLatest()
+
+  const tagAPI = useTagAPI(db)
+  const reportAPI = useReportAPI(db)
   await tagAPI.clear()
   await reportAPI.clear()
 

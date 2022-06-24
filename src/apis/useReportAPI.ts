@@ -1,4 +1,6 @@
-import { Database, SystemColumns } from '~~/src/databases/db'
+import { Kysely } from 'kysely'
+import { useTagAPI } from '~~/src/apis/useTagAPI'
+import { SystemColumns, Tables } from '~~/src/databases/db'
 import { Report } from '~~/src/databases/models/Report'
 
 export type SearchReport = {
@@ -8,9 +10,8 @@ export type SearchReport = {
 
 export type FormReport = Omit<Report, SystemColumns> & { tagNames: string[] }
 
-export const useReportAPI = () => {
-  const db = Database.getInstance()
-  onBeforeUnmount(async () => { await db.destroy() })
+export const useReportAPI = (db: Kysely<Tables>) => {
+  const tagAPI = useTagAPI(db)
 
   const getAll = async (params?: SearchReport) => {
     // レポートを取得する
@@ -170,23 +171,18 @@ export const useReportAPI = () => {
       const exist = reportTags.find(rt => rt.tag_name === tagName)
       if (!exist) {
         // tag を取得する
-        const tag = await db.selectFrom('tags')
-          .selectAll()
-          .where('name', '=', tagName)
-          .executeTakeFirst()
+        const tag = await tagAPI.getByName(tagName)
 
         // タグが無ければ新規に作成する
         let tagId = tag?.id
         if (!tagId) {
-          const newTag = await db.insertInto('tags')
-            .values({
-              name: tagName,
-              created_at: new Date(),
-              updated_at: new Date(),
-            })
-            .executeTakeFirst()
+          const newTag = await tagAPI.create({
+            name: tagName,
+            is_pinned: false,
+            priority: 0,
+          })
 
-          tagId = Number(newTag.insertId)
+          tagId = Number(newTag.id)
         }
 
         // reportTag を新規に作成する

@@ -34,6 +34,7 @@ export const migrations: Record<string, Migration> = {
 // singleton connection
 export class Database {
   static path = 'sqlite:./test.db'
+  static debug = false
 
   static #instance: Kysely<Tables>
   static #migrator: Migrator
@@ -43,6 +44,7 @@ export class Database {
       const db = new Kysely<Tables>({
         dialect: new TauriSqliteDialect({
           path: this.path,
+          debug: this.debug,
         })
       })
 
@@ -76,6 +78,8 @@ export class Database {
   }
 
   static async dbWipe () {
+    const db = this.#instance
+
     // 全テーブルの削除
     const tables = await db.introspection.getTables()
     for (const table of tables) {
@@ -85,6 +89,3 @@ export class Database {
     await db.schema.dropTable('kysely_migration_lock').execute()
   }
 }
-
-export const db = Database.getInstance()
-export const migrator = Database.getMigrator()
