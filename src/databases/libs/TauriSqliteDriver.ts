@@ -70,10 +70,14 @@ class TauriSqliteConnection implements DatabaseConnection {
         .map((item) => {
           const transItem = Object.entries(item)
             .map(([key, value]) => {
-              // 日付TEXT を DATE に変換する
-              const fmtValue = key.endsWith('_at')
-                ? new Date(value)
-                : value
+              let fmtValue = value
+              if (key.endsWith('_at')) {
+                // text -> date 変換
+                fmtValue = fmtValue != null ? new Date(value) : null
+              } else if (key.endsWith('is_')) {
+                // integer -> boolean 変換
+                fmtValue = fmtValue != null ? Boolean(value) : null
+              }
 
               return [key, fmtValue]
             })

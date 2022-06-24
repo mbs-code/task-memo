@@ -1,10 +1,10 @@
 import * as Kysely from 'kysely'
 
-export interface Report {
+export interface ReportTag {
   id: Kysely.Generated<number>
-  text: string
+  report_id: number
+  tag_id: number
 
   created_at: Date
   updated_at: Date
-  deleted_at?: Date
 }

@@ -8,12 +8,20 @@ import {
 import { TauriSqliteDialect } from './libs/TauriSqliteDialect'
 import { BuildinMigrationProvider } from './libs/BuildinMigrationProvider'
 
-import { Report } from './models/Report'
 import * as CreateInitTable from './migrations/20220623_create_init_table'
+
+import { Report } from '~~/src/databases/models/Report'
+import { Tag } from '~~/src/databases/models/Tag'
+import { ReportTag } from '~~/src/databases/models/ReportTag'
+import { Bookmark } from '~~/src/databases/models/Bookmark'
 
 // tables
 export interface Tables {
   reports: Report
+  tags: Tag
+  report_tags: ReportTag
+
+  bookmarks: Bookmark
 }
 
 // migrations
