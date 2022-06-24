@@ -1,7 +1,5 @@
-import * as Kysely from 'kysely'
-
 export interface Report {
-  id: Kysely.Generated<number>
+  id: number
   text: string
 
   created_at: Date

@@ -1,7 +1,5 @@
-import * as Kysely from 'kysely'
-
 export interface Bookmark {
-  id: Kysely.Generated<number>
+  id: number
   text: string
   color?: string
   priority: number

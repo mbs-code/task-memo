@@ -1,7 +1,5 @@
-import * as Kysely from 'kysely'
-
 export interface ReportTag {
-  id: Kysely.Generated<number>
+  id: number
   report_id: number
   tag_id: number
 
