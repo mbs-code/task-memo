@@ -1,23 +1,23 @@
 {
   "env": {
-      "browser": true,
-      "es2021": true,
-      "node": true
+    "browser": true,
+    "es2021": true,
+    "node": true
   },
   "extends": [
-      "eslint:recommended",
-      "plugin:vue/essential",
-      "plugin:@typescript-eslint/recommended",
-      "@nuxtjs/eslint-config-typescript"
+    "eslint:recommended",
+    "plugin:vue/essential",
+    "plugin:@typescript-eslint/recommended",
+    "@nuxtjs/eslint-config-typescript"
   ],
   "parserOptions": {
-      "ecmaVersion": "latest",
-      "parser": "@typescript-eslint/parser",
-      "sourceType": "module"
+    "ecmaVersion": "latest",
+    "parser": "@typescript-eslint/parser",
+    "sourceType": "module"
   },
   "plugins": [
-      "vue",
-      "@typescript-eslint"
+    "vue",
+    "@typescript-eslint"
   ],
   "rules": {
     // 未使用変数はwarn
@@ -30,13 +30,16 @@
     "vue/no-multiple-template-root": "off",
     // 複数の v-model を許可 (vue3 向け)
     "vue/no-v-model-argument": "off",
-
     // HTMLタグの属性の個数制限
     "vue/max-attributes-per-line": [
       "error",
       {
-        "singleline": { "max": 3 },
-        "multiline": { "max": 1 }
+        "singleline": {
+          "max": 3
+        },
+        "multiline": {
+          "max": 1
+        }
       }
     ],
     // JS配列のカンマを強制
@@ -48,13 +51,35 @@
     "indent": [
       "error",
       2,
-      { "SwitchCase": 1 }
+      {
+        "SwitchCase": 1
+      }
     ],
     // 改行スタイルはLFにする
-    "linebreak-style": ["error", "unix"],
+    "linebreak-style": [
+      "error",
+      "unix"
+    ],
     // シングルクオートを使用する
-    "quotes": ["error", "single"],
+    "quotes": [
+      "error",
+      "single"
+    ],
     // セミコロンは禁止
-    "semi": ["error", "never"]
-  }
+    "semi": [
+      "error",
+      "never"
+    ]
+  },
+  "overrides": [
+    // ページ要素は単一の root node である必要がある
+    {
+      "files": [
+        "./src/pages/**/*.vue"
+      ],
+      "rules": {
+        "vue/no-multiple-template-root": "error"
+      }
+    }
+  ]
 }

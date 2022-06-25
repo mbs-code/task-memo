@@ -1,3 +1,12 @@
+@import 'primeflex/primeflex.scss';
+
+// システム SCSS
+@import './nuxt.scss';
+
 html {
   font-size: 16px; // scaling
+
+  body {
+    @include styleclass('m-0')
+  }
 }
