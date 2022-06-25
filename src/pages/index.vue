@@ -34,18 +34,3 @@ const onRefresh = async () => {
   }
 }
 </script>
-
-<style scoped lang="scss">
-
-.report-text {
-  white-space: pre-wrap;
-
-  // タイトル扱い
-  &:first-line {
-    font-size: 1.25rem;
-    line-height: 2em;
-    font-weight: bold;
-    color: var(--primary-color);
-  }
-}
-</style>

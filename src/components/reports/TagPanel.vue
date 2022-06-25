@@ -2,8 +2,8 @@
   <Tag
     :value="tag.name"
     :style="{
-      backgroundColor: tag.color || 'darkgray',
-      color: fontColorContrast(tag.color || 'darkgray', 0.7),
+      backgroundColor: bgColor,
+      color: fontColor,
     }"
   />
 </template>
@@ -12,5 +12,8 @@
 import fontColorContrast from 'font-color-contrast'
 import { Tag as TagModel } from '~~/src/databases/models/Tag'
 
-defineProps<{ tag: TagModel }>()
+const props = defineProps<{ tag: TagModel }>()
+
+const bgColor = props.tag.color || 'darkgray'
+const fontColor = computed(() => fontColorContrast(bgColor, 0.7))
 </script>
