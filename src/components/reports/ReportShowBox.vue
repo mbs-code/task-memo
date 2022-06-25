@@ -2,18 +2,16 @@
   <div class="flex gap-2">
     <div class="flex-grow-1">
       <div class="flex flex-wrap gap-2">
-        <div class="flex flex-grow-1 flex-wrap gap-2">
-          <TagPanel
-            v-for="tag of report.tags"
-            :key="`${report.id}-${tag.id}`"
-            :tag="tag"
-          />
-        </div>
-
         <Tag
           class="report-time"
           icon="pi pi-clock"
           :value="createdAt"
+        />
+
+        <TagPanel
+          v-for="tag of report.tags"
+          :key="`${report.id}-${tag.id}`"
+          :tag="tag"
         />
       </div>
     </div>

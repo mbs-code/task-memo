@@ -4,6 +4,7 @@
       v-for="report of reports"
       :key="report.id"
       :report="report"
+      @reload="onRefresh"
     />
   </div>
 </template>
@@ -19,10 +20,6 @@ const toast = useToast()
 
 const reports = ref<ReportWithTag[]>([])
 
-onMounted(async () => {
-  await onRefresh()
-})
-
 const onRefresh = async () => {
   try {
     reports.value = await reportAPI.getAll({
@@ -33,4 +30,6 @@ const onRefresh = async () => {
     toast.catchError(err)
   }
 }
+
+onMounted(async () => { await onRefresh() })
 </script>
