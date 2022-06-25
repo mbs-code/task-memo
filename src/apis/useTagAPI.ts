@@ -11,6 +11,7 @@ export const useTagAPI = (db: Kysely<Tables>) => {
     // タグ配列を取得する
     const tags = await db.selectFrom('tags')
       .selectAll()
+      .if(Boolean(params?.parentTagId), qb => qb.where('parent_tag_id', '=', params.parentTagId))
       .if(Boolean(params?.perPage), qb => qb.limit(params.perPage))
       .if(Boolean(params?.page), qb => qb.offset(params.page))
       .if(Boolean(params?.sort), qb => qb.orderBy(params.sort, params?.order ?? 'asc'))
@@ -45,8 +46,8 @@ export const useTagAPI = (db: Kysely<Tables>) => {
       .values({
         name: form.name,
         color: form.color,
-        is_pinned: form.is_pinned,
-        priority: form.priority,
+        is_pinned: form.is_pinned ?? false,
+        priority: form.priority ?? 0,
         parent_tag_id: form.parent_tag_id,
         created_at: new Date(),
         updated_at: new Date(),
@@ -70,8 +71,8 @@ export const useTagAPI = (db: Kysely<Tables>) => {
       .set({
         name: form.name,
         color: form.color,
-        is_pinned: form.is_pinned,
-        priority: form.priority,
+        is_pinned: form.is_pinned ?? false,
+        priority: form.priority ?? 0,
         parent_tag_id: form.parent_tag_id,
         updated_at: new Date(),
       })

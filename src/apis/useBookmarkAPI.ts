@@ -1,10 +1,10 @@
 import { Kysely } from 'kysely'
 import { Tables } from '~~/src/databases/Database'
-import { SearchModel, SystemColumns } from '~~/src/databases/DBUtil'
+import { Nullable, SearchModel, SystemColumns } from '~~/src/databases/DBUtil'
 import { Bookmark } from '~~/src/databases/models/Bookmark'
 
 export type SearchBookmark = SearchModel<Bookmark>
-export type FormBookmark = Omit<Bookmark, SystemColumns>
+export type FormBookmark = Nullable<Omit<Bookmark, SystemColumns>, 'priority'>
 
 export const useBookmarkAPI = (db: Kysely<Tables>) => {
   const getAll = async (params?: SearchBookmark): Promise<Bookmark[]> => {
@@ -35,7 +35,7 @@ export const useBookmarkAPI = (db: Kysely<Tables>) => {
       .values({
         text: form.text,
         color: form.color,
-        priority: form.priority,
+        priority: form.priority ?? 0,
         created_at: new Date(),
         updated_at: new Date(),
       })
@@ -50,7 +50,7 @@ export const useBookmarkAPI = (db: Kysely<Tables>) => {
       .set({
         text: form.text,
         color: form.color,
-        priority: form.priority,
+        priority: form.priority ?? 0,
         updated_at: new Date(),
       })
       .where('id', '=', bookmarkId)

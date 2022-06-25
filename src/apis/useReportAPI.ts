@@ -176,8 +176,6 @@ export const useReportAPI = (db: Kysely<Tables>) => {
         if (!tagId) {
           const newTag = await tagAPI.create({
             name: tagName,
-            is_pinned: false,
-            priority: 0,
           })
 
           tagId = Number(newTag.id)
