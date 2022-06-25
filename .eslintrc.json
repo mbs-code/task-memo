@@ -22,6 +22,11 @@
   "rules": {
     // 未使用変数はwarn
     "@typescript-eslint/no-unused-vars": "warn",
+    // await必須はwarn
+    "require-await": "warn",
+    // 到達不可コードもwarn
+    "no-unreachable": "warn",
+    // //////////////////////////////////////////////////
     // single word の命名を許可
     "vue/multi-word-component-names": "off",
     // vue2 用の key rule を無効化
@@ -42,6 +47,7 @@
         }
       }
     ],
+    // //////////////////////////////////////////////////
     // JS配列のカンマを強制
     "comma-dangle": [
       "error",
