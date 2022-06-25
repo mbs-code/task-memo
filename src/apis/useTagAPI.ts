@@ -7,7 +7,7 @@ export type SeatchTag = SearchModel<Tag> & { parentTagId?: number }
 export type FormTag = Nullable<Omit<Tag, SystemColumns | 'path'>, 'is_pinned' | 'priority'>
 
 export const useTagAPI = (db: Kysely<Tables>) => {
-  const getAll = async (params?: SeatchTag) => {
+  const getAll = async (params?: SeatchTag): Promise<Tag[]> => {
     // タグ配列を取得する
     const tags = await db.selectFrom('tags')
       .selectAll()
@@ -19,7 +19,7 @@ export const useTagAPI = (db: Kysely<Tables>) => {
     return tags.map(tag => ({ ...tag }))
   }
 
-  const get = async (tagId: number) => {
+  const get = async (tagId: number): Promise<Tag> => {
     // タグを取得する
     const tag = await db.selectFrom('tags')
       .selectAll()
@@ -29,7 +29,7 @@ export const useTagAPI = (db: Kysely<Tables>) => {
     return { ...tag }
   }
 
-  const getByName = async (tagName: string) => {
+  const getByName = async (tagName: string): Promise<Tag> => {
     // タグを取得する
     const tag = await db.selectFrom('tags')
       .selectAll()
@@ -39,7 +39,7 @@ export const useTagAPI = (db: Kysely<Tables>) => {
     return { ...tag }
   }
 
-  const create = async (form: FormTag) => {
+  const create = async (form: FormTag): Promise<Tag> => {
     // タグを作成する
     const { insertId } = await db.insertInto('tags')
       .values({
@@ -61,7 +61,7 @@ export const useTagAPI = (db: Kysely<Tables>) => {
     return get(tagId)
   }
 
-  const update = async (tagId: number, form: FormTag) => {
+  const update = async (tagId: number, form: FormTag): Promise<Tag> => {
     // パス更新用に現在の値を取得する
     const { parent_tag_id: parentTagId } = await get(tagId)
 
@@ -88,14 +88,14 @@ export const useTagAPI = (db: Kysely<Tables>) => {
     return get(tagId)
   }
 
-  const remove = async (tagId: number) => {
+  const remove = async (tagId: number): Promise<boolean> => {
     // 関連する reportTag を消す
     const { numDeletedRows } = await _removeRecursive(tagId)
 
     return Number(numDeletedRows) > 0
   }
 
-  const clear = async () => {
+  const clear = async (): Promise<number> => {
     // 関連する reportTag を消す
     await db.deleteFrom('report_tags')
       .executeTakeFirst()

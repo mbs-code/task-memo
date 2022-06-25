@@ -2,7 +2,7 @@ import { Kysely } from 'kysely'
 import { useTagAPI } from '~~/src/apis/useTagAPI'
 import { Tables } from '~~/src/databases/Database'
 import { SearchModel, SystemColumns } from '~~/src/databases/DBUtil'
-import { Report } from '~~/src/databases/models/Report'
+import { Report, ReportWithTag } from '~~/src/databases/models/Report'
 
 export type SearchReport = SearchModel<Report>
 export type FormReport = Omit<Report, SystemColumns> & { tagNames: string[] }
@@ -10,7 +10,7 @@ export type FormReport = Omit<Report, SystemColumns> & { tagNames: string[] }
 export const useReportAPI = (db: Kysely<Tables>) => {
   const tagAPI = useTagAPI(db)
 
-  const getAll = async (params?: SearchReport) => {
+  const getAll = async (params?: SearchReport): Promise<ReportWithTag[]> => {
     // レポートを取得する
     const reports = await db.selectFrom('reports')
       .selectAll()
@@ -49,7 +49,7 @@ export const useReportAPI = (db: Kysely<Tables>) => {
     return reportWithTags
   }
 
-  const get = async (reportId: number) => {
+  const get = async (reportId: number): Promise<ReportWithTag> => {
     // レポートを取得する
     const report = await db.selectFrom('reports')
       .selectAll()
@@ -80,7 +80,7 @@ export const useReportAPI = (db: Kysely<Tables>) => {
     return reportWithTag
   }
 
-  const create = async (form: FormReport) => {
+  const create = async (form: FormReport): Promise<ReportWithTag> => {
     // レポートを作成する
     const { insertId } = await db.insertInto('reports')
       .values({
@@ -97,7 +97,7 @@ export const useReportAPI = (db: Kysely<Tables>) => {
     return get(reportId)
   }
 
-  const update = async (reportId: number, form: FormReport) => {
+  const update = async (reportId: number, form: FormReport): Promise<ReportWithTag> => {
     // レポートを更新する
     const { numUpdatedRows } = await db.updateTable('reports')
       .set({
@@ -117,7 +117,7 @@ export const useReportAPI = (db: Kysely<Tables>) => {
     return get(reportId)
   }
 
-  const remove = async (reportId: number) => {
+  const remove = async (reportId: number): Promise<boolean> => {
     // 関連する reportTag を消す
     await db.deleteFrom('report_tags')
       .where('report_id', '=', reportId)
@@ -135,7 +135,7 @@ export const useReportAPI = (db: Kysely<Tables>) => {
     return true
   }
 
-  const clear = async () => {
+  const clear = async (): Promise<number> => {
     // 関連する reportTag を消す
     await db.deleteFrom('report_tags')
       .executeTakeFirst()

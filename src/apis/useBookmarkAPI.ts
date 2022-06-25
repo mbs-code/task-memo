@@ -7,7 +7,7 @@ export type SearchBookmark = SearchModel<Bookmark>
 export type FormBookmark = Omit<Bookmark, SystemColumns>
 
 export const useBookmarkAPI = (db: Kysely<Tables>) => {
-  const getAll = async (params?: SearchBookmark) => {
+  const getAll = async (params?: SearchBookmark): Promise<Bookmark[]> => {
     // ブックマークを取得する
     const bookmarks = await db.selectFrom('bookmarks')
       .selectAll()
@@ -19,7 +19,7 @@ export const useBookmarkAPI = (db: Kysely<Tables>) => {
     return bookmarks.map(bookmark => ({ ...bookmark }))
   }
 
-  const get = async (bookmarkId: number) => {
+  const get = async (bookmarkId: number): Promise<Bookmark> => {
     // ブックマークを取得する
     const bookmark = await db.selectFrom('bookmarks')
       .selectAll()
@@ -29,7 +29,7 @@ export const useBookmarkAPI = (db: Kysely<Tables>) => {
     return { ...bookmark }
   }
 
-  const create = async (form: FormBookmark) => {
+  const create = async (form: FormBookmark): Promise<Bookmark> => {
     // ブックマークを作成する
     const { insertId } = await db.insertInto('bookmarks')
       .values({
@@ -44,7 +44,7 @@ export const useBookmarkAPI = (db: Kysely<Tables>) => {
     return get(Number(insertId))
   }
 
-  const update = async (bookmarkId: number, form: FormBookmark) => {
+  const update = async (bookmarkId: number, form: FormBookmark): Promise<Bookmark> => {
     // ブックマークを更新する
     const { numUpdatedRows } = await db.updateTable('bookmarks')
       .set({
@@ -63,7 +63,7 @@ export const useBookmarkAPI = (db: Kysely<Tables>) => {
     return get(bookmarkId)
   }
 
-  const remove = async (bookmarkId: number) => {
+  const remove = async (bookmarkId: number): Promise<boolean> => {
     // ブックマークを削除する
     const { numDeletedRows } = await db.deleteFrom('bookmarks')
       .where('id', '=', bookmarkId)
@@ -76,7 +76,7 @@ export const useBookmarkAPI = (db: Kysely<Tables>) => {
     return true
   }
 
-  const clear = async () => {
+  const clear = async (): Promise<number> => {
     // ブックマークを削除する
     const { numDeletedRows } = await db.deleteFrom('bookmarks')
       .executeTakeFirst()
