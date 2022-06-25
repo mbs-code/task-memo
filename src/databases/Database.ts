@@ -15,6 +15,7 @@ import { Tag } from '~~/src/databases/models/Tag'
 import { ReportTag } from '~~/src/databases/models/ReportTag'
 import { Bookmark } from '~~/src/databases/models/Bookmark'
 
+export type Nullable<T, D extends keyof T> = Pick<T, Exclude<keyof T, D>> & Partial<Pick<T, D>>
 export type SystemColumns = 'id' | 'created_at' | 'updated_at' | 'deleted_at'
 
 // tables
@@ -57,15 +58,10 @@ export class Database {
       this.#migrator = migrator
     }
 
-    return this.#instance
-  }
-
-  static getMigrator () {
-    if (!this.#migrator) {
-      this.getInstance()
+    return {
+      db: this.#instance,
+      migrator: this.#migrator,
     }
-
-    return this.#migrator
   }
 
   static async destroy () {

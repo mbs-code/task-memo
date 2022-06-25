@@ -10,3 +10,7 @@ html {
     @include styleclass('m-0')
   }
 }
+
+.spacer {
+  @include styleclass('flex-grow-1')
+}

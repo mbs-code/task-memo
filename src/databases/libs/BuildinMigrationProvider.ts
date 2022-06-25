@@ -4,7 +4,7 @@ import {
   Migration,
   MigrationProvider,
 } from 'kysely'
-import { migrations } from '../db'
+import { migrations } from '../Database'
 
 export class BuildinMigrationProvider implements MigrationProvider {
   // eslint-disable-next-line require-await

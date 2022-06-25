@@ -1,5 +1,5 @@
 import { DeleteResult, Kysely } from 'kysely'
-import { SystemColumns, Tables } from '~~/src/databases/db'
+import { Nullable, SystemColumns, Tables } from '~~/src/databases/Database'
 import { Tag } from '~~/src/databases/models/Tag'
 
 export type SeatchTag = {
@@ -9,7 +9,7 @@ export type SeatchTag = {
   perPage?: number
 }
 
-export type FormTag = Omit<Tag, SystemColumns | 'path'>
+export type FormTag = Nullable<Omit<Tag, SystemColumns | 'path'>, 'is_pinned' | 'priority'>
 
 export const useTagAPI = (db: Kysely<Tables>) => {
   const getAll = async (params?: SeatchTag) => {

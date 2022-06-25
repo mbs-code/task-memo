@@ -1,5 +1,5 @@
 import { Kysely } from 'kysely'
-import { SystemColumns, Tables } from '~~/src/databases/db'
+import { SystemColumns, Tables } from '~~/src/databases/Database'
 import { Bookmark } from '~~/src/databases/models/Bookmark'
 
 export type SearchBookmark = {
@@ -9,7 +9,7 @@ export type SearchBookmark = {
 
 export type FormBookmark = Omit<Bookmark, SystemColumns>
 
-export const useReportAPI = (db: Kysely<Tables>) => {
+export const useBookmarkAPI = (db: Kysely<Tables>) => {
   const getAll = async (params?: SearchBookmark) => {
     // ブックマークを取得する
     const bookmarks = await db.selectFrom('bookmarks')

@@ -1,6 +1,6 @@
 import { Kysely } from 'kysely'
 import { useTagAPI } from '~~/src/apis/useTagAPI'
-import { SystemColumns, Tables } from '~~/src/databases/db'
+import { SystemColumns, Tables } from '~~/src/databases/Database'
 import { Report } from '~~/src/databases/models/Report'
 
 export type SearchReport = {
