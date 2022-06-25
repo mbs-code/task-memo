@@ -1,12 +1,9 @@
 import { Kysely } from 'kysely'
-import { SystemColumns, Tables } from '~~/src/databases/Database'
+import { Tables } from '~~/src/databases/Database'
+import { SearchModel, SystemColumns } from '~~/src/databases/DBUtil'
 import { Bookmark } from '~~/src/databases/models/Bookmark'
 
-export type SearchBookmark = {
-  page?: number
-  perPage?: number
-}
-
+export type SearchBookmark = SearchModel<Bookmark>
 export type FormBookmark = Omit<Bookmark, SystemColumns>
 
 export const useBookmarkAPI = (db: Kysely<Tables>) => {
@@ -16,6 +13,7 @@ export const useBookmarkAPI = (db: Kysely<Tables>) => {
       .selectAll()
       .if(Boolean(params?.perPage), qb => qb.limit(params.perPage))
       .if(Boolean(params?.page), qb => qb.offset(params.page))
+      .if(Boolean(params?.sort), qb => qb.orderBy(params.sort, params?.order ?? 'asc'))
       .execute()
 
     return bookmarks.map(bookmark => ({ ...bookmark }))

@@ -1,13 +1,10 @@
 import { Kysely } from 'kysely'
 import { useTagAPI } from '~~/src/apis/useTagAPI'
-import { SystemColumns, Tables } from '~~/src/databases/Database'
+import { Tables } from '~~/src/databases/Database'
+import { SearchModel, SystemColumns } from '~~/src/databases/DBUtil'
 import { Report } from '~~/src/databases/models/Report'
 
-export type SearchReport = {
-  page?: number
-  perPage?: number
-}
-
+export type SearchReport = SearchModel<Report>
 export type FormReport = Omit<Report, SystemColumns> & { tagNames: string[] }
 
 export const useReportAPI = (db: Kysely<Tables>) => {
@@ -19,6 +16,7 @@ export const useReportAPI = (db: Kysely<Tables>) => {
       .selectAll()
       .if(Boolean(params?.perPage), qb => qb.limit(params.perPage))
       .if(Boolean(params?.page), qb => qb.offset(params.page))
+      .if(Boolean(params?.sort), qb => qb.orderBy(params.sort, params?.order ?? 'asc'))
       .execute()
 
     // レポートに紐づく中間テーブルを取得
