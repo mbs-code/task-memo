@@ -21,6 +21,13 @@ export default defineNuxtConfig({
     '@/assets/css/index.scss',
   ],
 
+  components: [
+    {
+      path: '@/components/',
+      pathPrefix: false,
+    },
+  ],
+
   vite: {
     plugins: [eslintPlugin({
       fix: true,
