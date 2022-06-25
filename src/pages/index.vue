@@ -1,23 +1,51 @@
 <template>
   <div>
-    <div>home</div>
-    <div>home</div>
-    <div>{{ reports }}</div>
+    <ReportPanel
+      v-for="report of reports"
+      :key="report.id"
+      :report="report"
+    />
   </div>
 </template>
 
 <script setup lang="ts">
 import { useReportAPI } from '~~/src/apis/useReportAPI'
 import { Database } from '~~/src/databases/Database'
-import { Report } from '~~/src/databases/models/Report'
+import { ReportWithTag } from '~~/src/databases/models/Report'
 
 const { db } = Database.getInstance()
 const reportAPI = useReportAPI(db)
+const toast = useToast()
 
-const reports = ref<Report[]>([])
+const reports = ref<ReportWithTag[]>([])
 
 onMounted(async () => {
-  reports.value = await reportAPI.getAll()
+  await onRefresh()
 })
 
+const onRefresh = async () => {
+  try {
+    reports.value = await reportAPI.getAll({
+      sort: 'id',
+      order: 'desc',
+    })
+  } catch (err) {
+    toast.catchError(err)
+  }
+}
 </script>
+
+<style scoped lang="scss">
+
+.report-text {
+  white-space: pre-wrap;
+
+  // タイトル扱い
+  &:first-line {
+    font-size: 1.25rem;
+    line-height: 2em;
+    font-weight: bold;
+    color: var(--primary-color);
+  }
+}
+</style>

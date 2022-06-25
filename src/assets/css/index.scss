@@ -1,16 +1,19 @@
+@import 'primevue/resources/themes/lara-light-blue/theme.css';
+@import 'primevue/resources/primevue.min.css';
 @import 'primeflex/primeflex.scss';
 
-// システム SCSS
 @import './nuxt.scss';
+@import './primevue.scss';
 
 html {
   font-size: 16px; // scaling
 
   body {
-    @include styleclass('m-0')
+    @include styleclass('m-0');
+    background-color: var(--surface-ground);
   }
 }
 
 .spacer {
-  @include styleclass('flex-grow-1')
+  @include styleclass('flex-grow-1');
 }

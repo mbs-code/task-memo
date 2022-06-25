@@ -35,7 +35,9 @@ const toast = useToast()
 const onResetDB = async () => {
   try {
     await Database.dbWipe()
-    await migrator.migrateToLatest()
+    const { error } = await migrator.migrateToLatest()
+    if (error) { throw error }
+
     await testSeeder.seed()
 
     toast.info('DB をリセットしました。')
