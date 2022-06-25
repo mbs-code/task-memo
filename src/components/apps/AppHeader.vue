@@ -23,17 +23,23 @@ import { Database } from '~~/src/databases/Database'
 import { useToast } from '~~/src/composables/useToast'
 import { useTestSeeder } from '~~/src/composables/useTestSeeder'
 
+type Emit = {
+  (e: 'reload'): void
+}
+const emit = defineEmits<Emit>()
+
 const { db, migrator } = Database.getInstance()
 const testSeeder = useTestSeeder(db)
-
 const toast = useToast()
 
 const onResetDB = async () => {
   try {
+    await Database.dbWipe()
     await migrator.migrateToLatest()
     await testSeeder.seed()
 
     toast.info('DB をリセットしました。')
+    emit('reload')
   } catch (err) {
     toast.catchError(err)
   }

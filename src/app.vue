@@ -1,11 +1,19 @@
 <template>
   <div>
-    <AppHeader />
+    <AppHeader @reload="onReload" />
 
     <div class="p-2">
-      <NuxtPage />
+      <NuxtPage :key="key" />
     </div>
 
     <Toast />
   </div>
 </template>
+
+<script setup lang="ts">
+const key = ref<number>(Date.now())
+
+const onReload = () => {
+  key.value = Date.now()
+}
+</script>
