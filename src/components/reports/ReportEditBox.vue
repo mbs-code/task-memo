@@ -1,31 +1,71 @@
 <template>
-  <div class="flex gap-2">
+  <div
+    class="flex gap-2"
+    @keydown.t.ctrl="openTagEditDialog"
+    @keydown.s.ctrl="onSave"
+    @keydown.esc="onClose"
+  >
     <div class="flex-grow-1">
+      <div class=" mb-2">
+        <div class="flex flex-wrap gap-2">
+          <Button
+            class="report-tag-button p-button-primary p-button-text"
+            icon="pi pi-plus"
+            label="タグ編集"
+            @click="openTagEditDialog"
+          />
+
+          <Button
+            v-for="tag of report?.tags ?? []"
+            :key="`${report.id}-${tag.id}`"
+            class="report-tag-button p-button-secondary"
+            icon="pi pi-tag"
+            :label="tag.name"
+            :style="{
+              backgroundColor: tag.color,
+              color: fontColorContrast(tag.color, 0.7)
+            }"
+          />
+        </div>
+      </div>
+
       <Textarea
         ref="refTextarea"
         v-model="form.text"
         auto-resize
         class="w-full"
-        rows="8"
+        rows="3"
         helptext
-        @keydown.s.ctrl="onSave"
-        @keydown.esc="onClose"
       />
-      <small>保存 Ctrl+S, 閉じる Esc</small>
+
+      <div class="flex gap-2 text-xs">
+        <span>保存: Ctrl+S</span>
+        <span>タグ編集: Ctrl+T</span>
+        <span v-if="!disableClose">閉じる: Esc</span>
+
+        <div class="spacer" />
+
+        <span>行数: {{ textCount }}</span>
+        <span>文字数: {{ lineCount }}</span>
+      </div>
     </div>
 
-    <div>
+    <div v-if="!disableClose">
       <Button
-        class="p-button-text p-0 btn-fixed-size"
+        class="report-tag-button p-button-text p-0 btn-fixed-size"
         icon="pi pi-times"
         @click="onClose"
       />
     </div>
   </div>
+
+  <TagEditDialog
+    v-model:visible="showTagEditDialog"
+  />
 </template>
 
 <script setup lang="ts">
-import Textarea from 'primevue/textarea'
+import fontColorContrast from 'font-color-contrast'
 import { FormReport, useReportAPI } from '~~/src/apis/useReportAPI'
 import { Database } from '~~/src/databases/Database'
 import { ReportWithTag } from '~~/src/databases/models/Report'
@@ -35,7 +75,10 @@ type Emit = {
   (e: 'close'): void
 }
 const emit = defineEmits<Emit>()
-const props = defineProps<{ report: ReportWithTag }>()
+const props = defineProps<{
+  report?: ReportWithTag,
+  disableClose?: boolean,
+}>()
 
 const { db } = Database.getInstance()
 const reportAPI = useReportAPI(db)
@@ -45,14 +88,16 @@ const form = reactive<FormReport>({
   text: '',
   tagNames: [],
 })
+const lineCount = computed(() => form.text?.length ?? 0)
+const textCount = computed(() => ((form.text ?? '').match(/\n/g) || []).length + 1)
 
 const onInit = () => {
-  form.text = props.report.text
+  form.text = props.report?.text || null
 }
 
 const onSave = async () => {
   try {
-    const reportId = props.report.id
+    const reportId = props.report?.id
     const res = reportId
       ? await reportAPI.update(reportId, form)
       : await reportAPI.create(form)
@@ -67,25 +112,41 @@ const onSave = async () => {
   }
 }
 
-const onClose = () => { emit('close') }
+const onClose = () => {
+  if (!props.disableClose) {
+    emit('close')
+  } else {
+    onInit()
+  }
+}
+
+onMounted(() => {
+  onInit()
+  onFocusTextarea()
+})
+
+watch(() => props.report, () => {
+  onInit()
+  onFocusTextarea()
+})
 
 /// //////////////////////////////////////////////////
 
 const refTextarea = ref()
-onMounted(() => {
-  onInit()
-  refTextarea.value.$el.focus()
-})
+const onFocusTextarea = () => {
+  refTextarea.value?.$el?.focus()
+}
 
-watch(props.report, () => {
-  onInit()
-  refTextarea.value.$el.focus()
+/// //////////////////////////////////////////////////
+
+const showTagEditDialog = ref<boolean>(false)
+const openTagEditDialog = () => {
+  showTagEditDialog.value = true
+}
+
+watch(showTagEditDialog, () => {
+  if (!showTagEditDialog.value) {
+    onFocusTextarea()
+  }
 })
 </script>
-
-<style scoped>
-.btn-fixed-size {
-  min-width: 3rem;
-  height: calc(1.75rem);
-}
-</style>

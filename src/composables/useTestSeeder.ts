@@ -35,16 +35,33 @@ export const useTestSeeder = (db: Kysely<Tables>) => {
 
     const tagD = await tagAPI.create({
       name: 'DDD',
+      color: 'yellow',
       parent_tag_id: tagC.id,
     })
     const tagE = await tagAPI.create({
       name: 'EEE',
+      color: 'green',
       parent_tag_id: tagC.id,
     })
 
     const tagF = await tagAPI.create({
       name: 'FFF',
       parent_tag_id: tagE.id,
+    })
+
+    const tagX = await tagAPI.create({
+      name: 'XXX',
+      parent_tag_id: null,
+    })
+
+    const tagY = await tagAPI.create({
+      name: 'YYY',
+      parent_tag_id: tagX.id,
+    })
+
+    const tagZ = await tagAPI.create({
+      name: 'ZZZ',
+      parent_tag_id: tagY.id,
     })
 
     ///
@@ -55,8 +72,18 @@ export const useTestSeeder = (db: Kysely<Tables>) => {
     })
 
     const reportB = await reportAPI.create({
+      text: 'なにぬねの\n\n- abcde\n- fghij',
+      tagNames: ['DDD', 'EEE'],
+    })
+
+    const reportC = await reportAPI.create({
       text: 'タグなしレポート\n\n- テスト1\n- テスト2',
-      tagNames: ['BBB', 'DDD'],
+      tagNames: [],
+    })
+
+    const reportD = await reportAPI.create({
+      text: 'タイトルのみ',
+      tagNames: [],
     })
   }
 

@@ -2,7 +2,7 @@
   <div>
     <AppHeader @reload="onReload" />
 
-    <div class="p-2">
+    <div class="p-2 main-viewport">
       <NuxtPage :key="key" />
     </div>
 
@@ -20,3 +20,10 @@ const onReload = () => {
   key.value = Date.now()
 }
 </script>
+
+<style scoped>
+.main-viewport {
+  overflow-y: scroll;
+  height: calc(100vh - 64px);
+}
+</style>

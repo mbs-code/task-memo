@@ -1,36 +1,44 @@
 <template>
-  <div class="flex gap-2">
+  <div class="flex gap-2 mb-2">
     <div class="flex-grow-1">
       <div class="flex flex-wrap gap-2">
-        <Tag
-          class="report-time"
+        <Button
+          class="report-tag-button p-button-secondary p-button-outlined"
           icon="pi pi-clock"
-          :value="createdAt"
+          :label="createdAt"
         />
 
-        <TagPanel
+        <Button
           v-for="tag of report.tags"
           :key="`${report.id}-${tag.id}`"
-          :tag="tag"
+          class="report-tag-button p-button-secondary"
+          icon="pi pi-tag"
+          :label="tag.name"
+          :style="{
+            backgroundColor: tag.color,
+            color: fontColorContrast(tag.color, 0.7)
+          }"
         />
       </div>
     </div>
 
     <div>
       <Button
-        class="p-button-text p-0"
+        class="report-tag-button p-button-text"
         icon="pi pi-ellipsis-h"
+        @click="onEdit"
       />
     </div>
   </div>
 
-  <div class="mt-2 report-text" @dblclick="onEdit">
+  <div class="report-text" @dblclick="onEdit">
     {{ report.text }}
   </div>
 </template>
 
 <script setup lang="ts">
 import dateFormat from 'date-fns/format'
+import fontColorContrast from 'font-color-contrast'
 import { ReportWithTag } from '~~/src/databases/models/Report'
 
 type Emit = {
@@ -55,12 +63,5 @@ const onEdit = () => { emit('edit') }
     font-weight: bold;
     color: var(--primary-color);
   }
-}
-
-.report-time {
-  border: solid 1px;
-  color: var(--text-color);
-  border-color: var(--text-color);
-  background-color: #fff;
 }
 </style>

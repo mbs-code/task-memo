@@ -14,6 +14,26 @@ html {
   }
 }
 
+::-webkit-scrollbar {
+  width: 0.5rem;
+}
+
+::-webkit-scrollbar-thumb {
+  background-color: var(--primary-color);
+  border-radius: 1rem;
+  box-shadow: 0 0 0 1px rgba(255, 255, 255, .3);
+}
+
 .spacer {
   @include styleclass('flex-grow-1');
+}
+
+// タグ用のボタン
+.report-tag-button {
+  font-size: 0.75rem;
+  padding: 0.3rem 0.5rem;
+
+  &.p-button-icon-only {
+    padding: 0.3rem 0.5rem;
+  }
 }
