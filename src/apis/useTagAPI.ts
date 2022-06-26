@@ -35,7 +35,7 @@ export const useTagAPI = (db: Kysely<Tables>) => {
     const tag = await db.selectFrom('tags')
       .selectAll()
       .where('name', '=', tagName)
-      .executeTakeFirstOrThrow()
+      .executeTakeFirst()
 
     return { ...tag }
   }
