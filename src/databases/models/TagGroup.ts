@@ -1,8 +1,7 @@
-export interface Tag {
+export interface TagGroup {
   id: number
   name: string
   color?: string
-  is_pinned: boolean // default
   priority: number // default
   tag_group_id?: number
 

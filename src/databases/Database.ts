@@ -14,11 +14,14 @@ import { Report } from '~~/src/databases/models/Report'
 import { Tag } from '~~/src/databases/models/Tag'
 import { ReportTag } from '~~/src/databases/models/ReportTag'
 import { Bookmark } from '~~/src/databases/models/Bookmark'
+import { TagGroup } from '~~/src/databases/models/TagGroup'
 
 // tables
 export interface Tables {
-  reports: Report
   tags: Tag
+  tag_groups: TagGroup
+
+  reports: Report
   report_tags: ReportTag
 
   bookmarks: Bookmark

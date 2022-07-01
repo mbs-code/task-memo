@@ -7,7 +7,7 @@
   >
     <div class="grid p-2">
       <div class="col">
-        <Button @click="tagAction.onTreeExpandAll">
+        <!-- <Button @click="tagAction.onTreeExpandAll">
           すべて表示
         </Button>
 
@@ -21,7 +21,7 @@
           :value="tagAction.tagTrees.value"
           selection-mode="multiple"
           :meta-key-selection="false"
-        />
+        /> -->
       </div>
 
       <div class="col flex flex-column gap-2">

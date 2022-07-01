@@ -3,65 +3,78 @@
 import { Kysely } from 'kysely'
 import { useReportAPI } from '~~/src/apis/useReportAPI'
 import { useTagAPI } from '~~/src/apis/useTagAPI'
+import { useTagGroupAPI } from '~~/src/apis/useTagGroup'
 import { Tables } from '~~/src/databases/Database'
 
 export const useTestSeeder = (db: Kysely<Tables>) => {
   const reportAPI = useReportAPI(db)
   const tagAPI = useTagAPI(db)
+  const tagGroupAPI = useTagGroupAPI(db)
 
   const seed = async () => {
     /**
      * TAG:
-     * - AAA
-     *   - BBB
-     *   - CCC
-     *     - DDD
-     *       - FFF
-     *     - EEE
+     * - groupA
+     *   - AAA
+     *   - groupB
+     *     - groupC
+     *     - groupD
+     *       - BBB
+     *       - CCC
+     * - groupB
+     *   - DDD
+     *   - EEE
+     * - FFF
      */
+
+    const groupA = await tagGroupAPI.create({
+      name: 'GroupA',
+      tag_group_id: null,
+    })
+    const groupB = await tagGroupAPI.create({
+      name: 'GroupB',
+      tag_group_id: groupA.id,
+    })
+    const groupC = await tagGroupAPI.create({
+      name: 'GroupC',
+      tag_group_id: groupB.id,
+    })
+    const groupD = await tagGroupAPI.create({
+      name: 'GroupD',
+      tag_group_id: groupB.id,
+    })
 
     const tagA = await tagAPI.create({
       name: 'AAA',
-      parent_tag_id: null,
+      tag_group_id: groupA.id,
     })
     const tagB = await tagAPI.create({
       name: 'BBB',
-      parent_tag_id: tagA.id,
+      tag_group_id: groupD.id,
     })
     const tagC = await tagAPI.create({
       name: 'CCC',
-      parent_tag_id: tagA.id,
+      tag_group_id: groupD.id,
     })
-
     const tagD = await tagAPI.create({
       name: 'DDD',
       color: 'yellow',
-      parent_tag_id: tagC.id,
+      tag_group_id: groupB.id,
     })
     const tagE = await tagAPI.create({
       name: 'EEE',
       color: 'green',
-      parent_tag_id: tagC.id,
+      tag_group_id: groupB.id,
     })
-
     const tagF = await tagAPI.create({
       name: 'FFF',
-      parent_tag_id: tagE.id,
+      color: 'blue',
+      tag_group_id: null,
     })
-
-    const tagX = await tagAPI.create({
-      name: 'XXX',
-      parent_tag_id: null,
-    })
-
-    const tagY = await tagAPI.create({
-      name: 'YYY',
-      parent_tag_id: tagX.id,
-    })
-
-    const tagZ = await tagAPI.create({
-      name: 'ZZZ',
-      parent_tag_id: tagY.id,
+    const tagG = await tagAPI.create({
+      name: 'GGG',
+      color: 'red',
+      tag_group_id: null,
     })
 
     ///

@@ -59,7 +59,8 @@
         "height": 600,
         "resizable": true,
         "title": "Task memo",
-        "width": 800
+        "width": 800,
+        "fileDropEnabled": false
       }
     ]
   }

@@ -88,61 +88,61 @@ export const useReportTagAction = (
 
   /// ////////////////////////////////////////////////////////////
 
-  // タグツリー用データ
-  const tagTrees = computed(() => {
-    // ルート要素をピックして、再起取得していく
-    const roots: TagTreeItem[] = tags.value
-      .filter(t => !t.parent_tag_id)
-      .map(t => _convertNodeRecursive(tags.value, t))
-    return roots
-  })
+  // // タグツリー用データ
+  // const tagTrees = computed(() => {
+  //   // ルート要素をピックして、再起取得していく
+  //   const roots: TagTreeItem[] = tags.value
+  //     .filter(t => !t.parent_tag_id)
+  //     .map(t => _convertNodeRecursive(tags.value, t))
+  //   return roots
+  // })
 
-  const _convertNodeRecursive = (allTags: Tag[], tag: Tag) => {
-    // 子を探索
-    const children = allTags
-      .filter(t => t.parent_tag_id === tag.id)
-      .map(t => _convertNodeRecursive(allTags, t))
+  // const _convertNodeRecursive = (allTags: Tag[], tag: Tag) => {
+  //   // 子を探索
+  //   const children = allTags
+  //     .filter(t => t.parent_tag_id === tag.id)
+  //     .map(t => _convertNodeRecursive(allTags, t))
 
-    const hasChild = children.length
-    return {
-      key: tag.id,
-      label: tag.name,
-      data: tag,
-      icon: `pi ${hasChild ? 'pi-tags' : 'pi-tag'}`,
-      children,
-    }
-  }
+  //   const hasChild = children.length
+  //   return {
+  //     key: tag.id,
+  //     label: tag.name,
+  //     data: tag,
+  //     icon: `pi ${hasChild ? 'pi-tags' : 'pi-tag'}`,
+  //     children,
+  //   }
+  // }
 
-  // ツリーのタグ選択値
-  const selectedTreeKeys = computed({
-    get: () => {
-      // tag 配列を { 1: true, 2: true } 形式に変換
-      return Object.fromEntries(
-        formSelectedTags.value.map((t: Tag) => [t.id, true])
-      )
-    },
-    set: (obj) => {
-      // { 1: true, 2: true } を tag 配列に組み直す
-      const selectedTags: Tag[] = Object.keys(obj)
-        .map((key) => {
-          return tags.value.find(t => t.id === Number(key))
-        }).filter(t => t)
-      formSelectedTags.value = selectedTags
-    },
-  })
+  // // ツリーのタグ選択値
+  // const selectedTreeKeys = computed({
+  //   get: () => {
+  //     // tag 配列を { 1: true, 2: true } 形式に変換
+  //     return Object.fromEntries(
+  //       formSelectedTags.value.map((t: Tag) => [t.id, true])
+  //     )
+  //   },
+  //   set: (obj) => {
+  //     // { 1: true, 2: true } を tag 配列に組み直す
+  //     const selectedTags: Tag[] = Object.keys(obj)
+  //       .map((key) => {
+  //         return tags.value.find(t => t.id === Number(key))
+  //       }).filter(t => t)
+  //     formSelectedTags.value = selectedTags
+  //   },
+  // })
 
-  const expandTreeKeys = ref()
-  const onTreeExpandAll = () => {
-    expandTreeKeys.value = {
-      ...Object.fromEntries(
-        tags.value.map((t: Tag) => [t.id, true])
-      )
-    }
-  }
+  // const expandTreeKeys = ref()
+  // const onTreeExpandAll = () => {
+  //   expandTreeKeys.value = {
+  //     ...Object.fromEntries(
+  //       tags.value.map((t: Tag) => [t.id, true])
+  //     )
+  //   }
+  // }
 
-  const onTreeCallapseAll = () => {
-    expandTreeKeys.value = {}
-  }
+  // const onTreeCallapseAll = () => {
+  //   expandTreeKeys.value = {}
+  // }
 
   /// ////////////////////////////////////////////////////////////
 
@@ -159,10 +159,10 @@ export const useReportTagAction = (
     onSuggestedTags,
     onSelectedTag,
 
-    tagTrees,
-    selectedTreeKeys,
-    expandTreeKeys,
-    onTreeCallapseAll,
-    onTreeExpandAll,
+    // tagTrees,
+    // selectedTreeKeys,
+    // expandTreeKeys,
+    // onTreeCallapseAll,
+    // onTreeExpandAll,
   }
 }

@@ -2,12 +2,14 @@ import { Kysely } from 'kysely'
 
 export async function up (db: Kysely<unknown>): Promise<void> {
   await db.schema
-    .createTable('reports')
+    .createTable('tag_groups')
     .addColumn('id', 'integer', col => col.primaryKey())
-    .addColumn('text', 'text', col => col.notNull())
+    .addColumn('name', 'text', col => col.notNull())
+    .addColumn('color', 'text')
+    .addColumn('priority', 'integer', col => col.notNull().defaultTo(0))
+    .addColumn('tag_group_id', 'integer') // 親ID
     .addColumn('created_at', 'datetime', col => col.notNull())
     .addColumn('updated_at', 'datetime', col => col.notNull())
-    .addColumn('deleted_at', 'datetime')
     .execute()
 
   await db.schema
@@ -17,10 +19,18 @@ export async function up (db: Kysely<unknown>): Promise<void> {
     .addColumn('color', 'text')
     .addColumn('is_pinned', 'boolean', col => col.notNull().defaultTo(false))
     .addColumn('priority', 'integer', col => col.notNull().defaultTo(0))
-    .addColumn('parent_tag_id', 'integer') // タググループ用
-    .addColumn('path', 'text') // パスをキャッシュさせる
+    .addColumn('tag_group_id', 'integer')
     .addColumn('created_at', 'datetime', col => col.notNull())
     .addColumn('updated_at', 'datetime', col => col.notNull())
+    .execute()
+
+  await db.schema
+    .createTable('reports')
+    .addColumn('id', 'integer', col => col.primaryKey())
+    .addColumn('text', 'text', col => col.notNull())
+    .addColumn('created_at', 'datetime', col => col.notNull())
+    .addColumn('updated_at', 'datetime', col => col.notNull())
+    .addColumn('deleted_at', 'datetime')
     .execute()
 
   await db.schema

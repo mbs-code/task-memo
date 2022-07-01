@@ -19,7 +19,8 @@
     "primeflex": "^3.2.1",
     "primeicons": "^5.0.0",
     "primevue": "^3.15.0",
-    "tauri-plugin-sql-api": "github:tauri-apps/tauri-plugin-sql#d8ea61f2cbe2dfc9bf0947bab87b1547dcc945d4"
+    "tauri-plugin-sql-api": "github:tauri-apps/tauri-plugin-sql#d8ea61f2cbe2dfc9bf0947bab87b1547dcc945d4",
+    "vuedraggable": "^4.1.0"
   },
   "devDependencies": {
     "@nuxtjs/eslint-config-typescript": "^10.0.0",

@@ -1,10 +1,12 @@
 <template>
   <div>
+    <TagTree :tag-trees="tagTree.tagTrees.value" />
+
     <Card class="m-2">
       <template #content>
         <ReportEditBox
           disable-close
-          :tags="tags"
+          :tags="tagTree.tags.value"
           @reload="onRefresh"
         />
       </template>
@@ -14,7 +16,7 @@
       v-for="report of reports"
       :key="report.id"
       :report="report"
-      :tags="tags"
+      :tags="tagTree.tags.value"
       @reload="onRefresh"
     />
 
@@ -24,18 +26,17 @@
 
 <script setup lang="ts">
 import { useReportAPI } from '~~/src/apis/useReportAPI'
-import { useTagAPI } from '~~/src/apis/useTagAPI'
+import { useTagTree } from '~~/src/composables/reports/useTagTree'
 import { Database } from '~~/src/databases/Database'
 import { ReportWithTag } from '~~/src/databases/models/Report'
-import { Tag } from '~~/src/databases/models/Tag'
 
 const { db } = Database.getInstance()
 const reportAPI = useReportAPI(db)
-const tagAPI = useTagAPI(db)
 const toast = useToast()
 
+const tagTree = useTagTree(db, toast)
+
 const reports = ref<ReportWithTag[]>([])
-const tags = ref<Tag[]>([])
 
 const onRefresh = async () => {
   try {
@@ -43,7 +44,8 @@ const onRefresh = async () => {
       sort: 'id',
       order: 'desc',
     })
-    tags.value = await tagAPI.getAll({ sort: 'id' })
+
+    await tagTree.onInit()
   } catch (err) {
     toast.catchError(err)
   }
