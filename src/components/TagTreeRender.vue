@@ -1,19 +1,18 @@
 <template>
   <div
-    :class="{ 'bg-cyan-500': isDrag }"
     style="border: 1px solid grey;"
     :draggable="!disabled"
     @dragstart.stop="groupStart($event, tagTree)"
-    @dragend.stop="isDrag = false"
+    @dragend.stop="dragEnd"
     @dragenter.prevent="groupEnter"
     @dragover.prevent="groupOver"
   >
-    <div>
-      ■{{ tagTree.name }} {{ disabled }} {{ isDrag }}
+    <div :class="{ 'text-red-500': Boolean(draggedGroup), 'text-blue-500': disabled }">
+      ■{{ tagTree.name }} disabled: {{ disabled }}
     </div>
 
     <div
-      class="p-2 bg-red-300"
+      class="p-2 bg-red-100"
       @drop.stop="onDrop($event, tagTree)"
     />
 
@@ -22,21 +21,26 @@
       :key="`${nest}-g${__}`"
       class="ml-4"
     >
-      <!-- class="m-2" -->
       <TagTreeRender
         :tag-tree="group"
-        :disabled="disabled || isDrag"
+        :disabled="childDisabled"
         :nest="nest + 1"
         @update:node="($1, $2, $3) => emit('update:node', $1, $2, $3)"
       />
 
       <div
-        class="p-2 bg-yellow-300"
+        class="p-2 bg-yellow-100"
         @drop.stop="onDrop($event, tagTree)"
       />
     </div>
 
     <div class="flex flex-wrap">
+      <div
+        v-if="tagTree.tags.length"
+        class="p-2 bg-green-100"
+        @drop.stop="onDrop($event, tagTree)"
+      />
+
       <template
         v-for="(tag, __) in tagTree.tags"
         :key="`${nest}-t${__}`"
@@ -44,15 +48,24 @@
         <Button
           :label="tag.name"
           :draggable="!disabled"
+          class="p-button-outlined h-2rem"
+          :class="{ 'text-red-500': draggedTag?.id === tag.id }"
           @dragstart.stop="tagStart($event, tag)"
-          @dragend.stop="isDrag = false"
+          @dragend.stop="dragEnd"
         />
+
         <div
-          class="p-2 bg-cyan-300"
+          class="p-2 bg-cyan-100"
           @drop.stop="onDrop($event, tagTree)"
         />
       </template>
     </div>
+
+    <div
+      v-if="tagTree.tags.length"
+      class="p-2 bg-orange-100"
+      @drop.stop="onDrop($event, tagTree)"
+    />
   </div>
 </template>
 
@@ -73,7 +86,36 @@ const emit = defineEmits<{ // eslint-disable-line func-call-spacing
   (e: 'update:node', mode: 'tag' | 'group', id: number, targetGroup: TagGroup | null): void
 }>()
 
-const isDrag = ref<boolean>(false)
+// const isDrag = ref<boolean>(false)
+// const dragMode = ref<'tag' | 'group'>(null) // ドラッグモード
+const draggedGroup = ref<TagGroup>(null) // ドラッグ中の、グループ
+const draggedTag = ref<Tag>(null) // ドラッグ中の、タグ
+
+const childDisabled = computed(() => {
+  return props.disabled || Boolean(draggedGroup.value)
+})
+
+///
+
+const groupStart = (event: DragEvent, tagGroup: TagGroup) => {
+  console.log('start group', tagGroup.id)
+
+  event.dataTransfer.effectAllowed = 'move'
+  event.dataTransfer.dropEffect = 'move'
+  event.dataTransfer.setData('group-id', String(tagGroup.id))
+
+  draggedGroup.value = tagGroup
+}
+
+const tagStart = (event: DragEvent, tag: Tag) => {
+  console.log('start tag', tag.id, tag.name)
+
+  event.dataTransfer.effectAllowed = 'move'
+  event.dataTransfer.dropEffect = 'move'
+  event.dataTransfer.setData('tag-id', String(tag.id))
+
+  draggedTag.value = tag
+}
 
 const onDrop = (event: DragEvent, tagGroup: TagGroup) => {
   const tagId = event.dataTransfer.getData('tag-id') ?? null
@@ -82,9 +124,12 @@ const onDrop = (event: DragEvent, tagGroup: TagGroup) => {
   console.log(tagGroup)
   // const dragList = this.lists.find(list => list.id == dragId)
   // dragList.category = dropCategory
-  if (props.disabled || isDrag.value) {
+
+  // 選択してないと
+  if (props.disabled || Boolean(draggedGroup.value) || Boolean(draggedTag.value)) {
     console.log('return')
-    isDrag.value = false
+    draggedTag.value = null
+    draggedGroup.value = null
     return
   }
 
@@ -96,7 +141,8 @@ const onDrop = (event: DragEvent, tagGroup: TagGroup) => {
     emit('update:node', 'group', Number(groupId), tagGroup)
   }
 
-  isDrag.value = false
+  draggedTag.value = null
+  draggedGroup.value = null
 
   // if (tagId) {
   //   const tag = props.tagTree.tags.find(t => t.id === Number(tagId))
@@ -111,6 +157,13 @@ const onDrop = (event: DragEvent, tagGroup: TagGroup) => {
   // emit('update:node')
 }
 
+const dragEnd = () => {
+  draggedTag.value = null
+  draggedGroup.value = null
+}
+
+///
+
 const groupEnter = () => {
   // isDrag.value = true
   console.log('xx enter ' + props.tagTree.name)
@@ -118,7 +171,7 @@ const groupEnter = () => {
 
 const groupOver = (event: DragEvent) => {
   // isDrag.value = true
-  console.log('xx over ' + props.tagTree.name)
+  // console.log('xx over ' + props.tagTree.name)
 }
 
 // const groupLeave = () => {
@@ -127,26 +180,6 @@ const groupOver = (event: DragEvent) => {
 // }
 
 ///
-
-const groupStart = (event: DragEvent, tagGroup: TagGroup) => {
-  console.log('start group', tagGroup.id)
-
-  event.dataTransfer.effectAllowed = 'move'
-  event.dataTransfer.dropEffect = 'move'
-  event.dataTransfer.setData('group-id', String(tagGroup.id))
-
-  isDrag.value = true
-}
-
-const tagStart = (event: DragEvent, tag: Tag) => {
-  console.log('start tag', tag.id, tag.name)
-
-  event.dataTransfer.effectAllowed = 'move'
-  event.dataTransfer.dropEffect = 'move'
-  event.dataTransfer.setData('tag-id', String(tag.id))
-
-  isDrag.value = true
-}
 
 // const groupStart = (e, tagGroup: TagGroup) => {
 //   console.log('start group', tagGroup.id, tagGroup.name, e)
