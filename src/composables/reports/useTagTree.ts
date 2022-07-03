@@ -28,10 +28,13 @@ export const useTagTree = (db: Kysely<Tables>, toast: ReturnType<typeof useToast
 
   /// ////////////////////////////////////////////////////////////
 
-  const tagTrees = computed(() => {
+  const tagTrees = computed<TagTreeItem>(() => {
     // タググループの親を探して再起取得する
     const rootTagGroups = _mapped(null)
-    return rootTagGroups
+    return {
+      name: 'root',
+      ...rootTagGroups,
+    }
   })
 
   const _mapped = (tagGroup?: TagGroup) => {

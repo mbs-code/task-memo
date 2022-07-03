@@ -57,7 +57,7 @@ export const useTagAPI = (db: Kysely<Tables>) => {
   }
 
   const update = async (tagId: number, form: FormTag): Promise<Tag> => {
-    // レポートを更新する
+    // タグを更新する
     const { numUpdatedRows } = await db.updateTable('tags')
       .set({
         name: form.name,
@@ -66,6 +66,22 @@ export const useTagAPI = (db: Kysely<Tables>) => {
         priority: form.priority ?? 0,
         tag_group_id: form.tag_group_id,
         updated_at: new Date(),
+      })
+      .where('id', '=', tagId)
+      .executeTakeFirst()
+
+    if (Number(numUpdatedRows) === 0) {
+      throw new Error('no result')
+    }
+
+    return get(tagId)
+  }
+
+  const updateGroup = async (tagId: number, tagGroupId?: number): Promise<Tag> => {
+    // タグのグループのみを更新する
+    const { numUpdatedRows } = await db.updateTable('tags')
+      .set({
+        tag_group_id: tagGroupId ?? null,
       })
       .where('id', '=', tagId)
       .executeTakeFirst()
@@ -109,6 +125,7 @@ export const useTagAPI = (db: Kysely<Tables>) => {
     getByName,
     create,
     update,
+    updateGroup,
     remove,
     clear,
   }

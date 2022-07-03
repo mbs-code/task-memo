@@ -45,7 +45,7 @@ export const useTagGroupAPI = (db: Kysely<Tables>) => {
     return get(Number(insertId))
   }
 
-  const update = async (tagId: number, form: FormTag): Promise<TagGroup> => {
+  const update = async (tagGroupId: number, form: FormTag): Promise<TagGroup> => {
     // タググループを更新する
     const { numUpdatedRows } = await db.updateTable('tag_groups')
       .set({
@@ -55,32 +55,48 @@ export const useTagGroupAPI = (db: Kysely<Tables>) => {
         tag_group_id: form.tag_group_id,
         updated_at: new Date(),
       })
-      .where('id', '=', tagId)
+      .where('id', '=', tagGroupId)
       .executeTakeFirst()
 
     if (Number(numUpdatedRows) === 0) {
       throw new Error('no result')
     }
 
-    return get(tagId)
+    return get(tagGroupId)
   }
 
-  const remove = async (tagId: number): Promise<boolean> => {
+  const updateGroup = async (tagGroupId: number, parentTagGroupId?: number): Promise<TagGroup> => {
+    // タググループのグループのみを更新する
+    const { numUpdatedRows } = await db.updateTable('tag_groups')
+      .set({
+        tag_group_id: parentTagGroupId ?? null,
+      })
+      .where('id', '=', tagGroupId)
+      .executeTakeFirst()
+
+    if (Number(numUpdatedRows) === 0) {
+      throw new Error('no result')
+    }
+
+    return get(tagGroupId)
+  }
+
+  const remove = async (tagGroupId: number): Promise<boolean> => {
     // 関連する tag から親をを消す
     await db.updateTable('tags')
       .set({ tag_group_id: null })
-      .where('tag_group_id', '=', tagId)
+      .where('tag_group_id', '=', tagGroupId)
       .executeTakeFirst()
 
     // 関連する tagGroup から親をを消す
     await db.updateTable('tag_groups')
       .set({ tag_group_id: null })
-      .where('tag_group_id', '=', tagId)
+      .where('tag_group_id', '=', tagGroupId)
       .executeTakeFirst()
 
     // タグを削除する
     const { numDeletedRows } = await db.deleteFrom('tag_groups')
-      .where('id', '=', tagId)
+      .where('id', '=', tagGroupId)
       .executeTakeFirst()
 
     return Number(numDeletedRows) > 0
@@ -104,6 +120,7 @@ export const useTagGroupAPI = (db: Kysely<Tables>) => {
     get,
     create,
     update,
+    updateGroup,
     remove,
     clear,
   }

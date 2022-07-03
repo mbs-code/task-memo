@@ -21,7 +21,7 @@ export const useTestSeeder = (db: Kysely<Tables>) => {
      *     - groupD
      *       - BBB
      *       - CCC
-     * - groupB
+     * - groupE
      *   - DDD
      *   - EEE
      * - FFF
@@ -43,6 +43,10 @@ export const useTestSeeder = (db: Kysely<Tables>) => {
       name: 'GroupD',
       tag_group_id: groupB.id,
     })
+    const groupE = await tagGroupAPI.create({
+      name: 'GroupE',
+      tag_group_id: null,
+    })
 
     const tagA = await tagAPI.create({
       name: 'AAA',
@@ -59,12 +63,12 @@ export const useTestSeeder = (db: Kysely<Tables>) => {
     const tagD = await tagAPI.create({
       name: 'DDD',
       color: 'yellow',
-      tag_group_id: groupB.id,
+      tag_group_id: groupE.id,
     })
     const tagE = await tagAPI.create({
       name: 'EEE',
       color: 'green',
-      tag_group_id: groupB.id,
+      tag_group_id: groupE.id,
     })
     const tagF = await tagAPI.create({
       name: 'FFF',

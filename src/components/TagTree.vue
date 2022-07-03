@@ -1,38 +1,41 @@
 <template>
-  <div>{{ data }}</div>
+  <div>
+    <TagTreeRender
+      :tag-tree="tagTree"
+      :disabled="false"
+      @update:node="onUpdateNode"
+    />
+  </div>
 
-  <TagTreeNested v-model:tasks="data" :disabled="false" />
+  <!-- <TagTreeNested v-model:tasks="data" :disabled="false" /> -->
 </template>
 
 <script setup lang="ts">
+import { useTagAPI } from '~~/src/apis/useTagAPI'
+import { useTagGroupAPI } from '~~/src/apis/useTagGroup'
 import { TagTreeItem } from '~~/src/composables/reports/useTagTree'
+import { Database } from '~~/src/databases/Database'
+import { TagGroup } from '~~/src/databases/models/TagGroup'
 
 const props = defineProps<{
-  tagTrees: TagTreeItem,
+  tagTree: TagTreeItem,
+}>()
+const emit = defineEmits<{ // eslint-disable-line func-call-spacing
+  (e: 'update'): void
 }>()
 
-const data = ref([
-  {
-    name: 'task 1',
-    tasks: [
-      {
-        name: 'task 2',
-        tasks: []
-      }
-    ]
-  },
-  {
-    name: 'task 3',
-    tasks: [
-      {
-        name: 'task 4',
-        tasks: []
-      }
-    ]
-  },
-  {
-    name: 'task 5',
-    tasks: []
+const { db } = Database.getInstance()
+const tagAPI = useTagAPI(db)
+const tagGroupAPI = useTagGroupAPI(db)
+
+const onUpdateNode = async (mode: 'tag' | 'group', id: number, targetGroup: TagGroup | null) => {
+  if (mode === 'tag') {
+    await tagAPI.updateGroup(id, targetGroup.id)
+    emit('update')
+  } else if (mode === 'group' && id !== targetGroup.id) {
+    console.log('change')
+    await tagGroupAPI.updateGroup(id, targetGroup.id)
+    emit('update')
   }
-])
+}
 </script>

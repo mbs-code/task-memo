@@ -1,6 +1,8 @@
 <template>
   <div>
-    <TagTree :tag-trees="tagTree.tagTrees.value" />
+    <TagTree :tag-tree="tagTree.tagTrees.value" @update="tagTree.onInit()" />
+
+    <pre>{{ tagTree.tagTrees.value }}</pre>
 
     <Card class="m-2">
       <template #content>
