@@ -1,12 +1,14 @@
 <template>
   <div
     style="border: 1px solid grey;"
+    :class="{ 'border-pink-500 bg-pink-300': isEnterArea }"
     :draggable="!disabled"
     @dragstart.stop="groupStart($event, tagTree)"
     @dragend.stop="dragEnd"
-    @dragenter.prevent="groupEnter"
-    @dragover.prevent="groupOver"
     @drop.stop="onDrop($event, 0, tagTree.tags.length)"
+    @dragenter.stop="isEnterArea = true"
+    @dragleave.stop="isEnterArea = false"
+    @dragover.prevent
   >
     <div :class="{ 'text-red-500': Boolean(draggedGroup), 'text-blue-500': disabled }">
       ■{{ tagTree.name }} disabled: {{ disabled }}
@@ -14,14 +16,20 @@
 
     <div
       class="p-2 bg-red-100"
+      :class="{ 'bg-red-900': isEnterTop }"
       @drop.stop="onDrop($event, 0, tagTree.tags.length)"
+      @dragenter.stop="isEnterTop = true"
+      @dragleave.stop="isEnterTop = false"
     />
 
     <div class="flex flex-wrap">
       <div
         v-if="tagTree.tags.length"
         class="p-2 bg-green-100"
+        :class="{ 'bg-green-900': isEnterLeft }"
         @drop.stop="onDrop($event, 0, 0)"
+        @dragenter.stop="isEnterLeft = true"
+        @dragleave.stop="isEnterLeft = false"
       />
 
       <template
@@ -33,13 +41,17 @@
           :draggable="!disabled"
           class="p-button-outlined h-2rem"
           :class="{ 'text-red-500': draggedTag?.id === tag.id }"
+          @drop.stop
           @dragstart.stop="tagStart($event, tag)"
           @dragend.stop="dragEnd"
         />
 
         <div
           class="p-2 bg-blue-100"
+          :class="{ 'bg-blue-900': isEnterTagId === idx }"
           @drop.stop="onDrop($event, 0, idx + 1)"
+          @dragenter.stop="isEnterTagId = idx"
+          @dragleave.stop="isEnterTagId = null"
         />
       </template>
     </div>
@@ -47,7 +59,10 @@
     <div
       v-if="tagTree.tags.length"
       class="p-2 bg-orange-100"
+      :class="{ 'bg-orange-900': isEnterBottom }"
       @drop.stop="onDrop($event, 0, tagTree.tags.length)"
+      @dragenter.stop="isEnterBottom = true"
+      @dragleave.stop="isEnterBottom = false"
     />
 
     <div
@@ -65,7 +80,10 @@
 
       <div
         class="p-2 bg-yellow-100"
+        :class="{ 'bg-yellow-900': isEnterGroupId === idx }"
         @drop.stop="onDrop($event, idx + 1, tagTree.tags.length)"
+        @dragenter.stop="isEnterGroupId = idx"
+        @dragleave.stop="isEnterGroupId = null"
       />
     </div>
   </div>
@@ -89,8 +107,13 @@ const emit = defineEmits<{ // eslint-disable-line func-call-spacing
   (e: 'update:tag', id: number, targetGroup: TagGroup | null, insertIndex: number): void,
 }>()
 
-// const isDrag = ref<boolean>(false)
-// const dragMode = ref<'tag' | 'group'>(null) // ドラッグモード
+const isEnterArea = ref<boolean>(false)
+const isEnterTop = ref<boolean>(false)
+const isEnterBottom = ref<boolean>(false)
+const isEnterGroupId = ref<number>(null)
+const isEnterLeft = ref<boolean>(false)
+const isEnterTagId = ref<number>(null)
+
 const draggedGroup = ref<TagGroup>(null) // ドラッグ中の、グループ
 const draggedTag = ref<Tag>(null) // ドラッグ中の、タグ
 
@@ -101,8 +124,6 @@ const childDisabled = computed(() => {
 ///
 
 const groupStart = (event: DragEvent, tagGroup: TagGroup) => {
-  console.log('start group', tagGroup.id)
-
   event.dataTransfer.effectAllowed = 'move'
   event.dataTransfer.dropEffect = 'move'
   event.dataTransfer.setData('group-id', String(tagGroup.id))
@@ -111,29 +132,16 @@ const groupStart = (event: DragEvent, tagGroup: TagGroup) => {
 }
 
 const tagStart = (event: DragEvent, tag: Tag) => {
-  console.log('start tag', tag.id, tag.name)
-
   event.dataTransfer.effectAllowed = 'move'
   event.dataTransfer.dropEffect = 'move'
   event.dataTransfer.setData('tag-id', String(tag.id))
 
   draggedTag.value = tag
-  console.log(draggedTag.value)
 }
 
 const onDrop = (event: DragEvent, insertGroupIndex: number, insertTagIndex: number) => {
-  // -1 は最大値
-
   const tagId = event.dataTransfer.getData('tag-id') ?? null
   const groupId = event.dataTransfer.getData('group-id') ?? null
-  console.log('onDrop:', props.tagTree.name)
-  console.log('groupId', groupId, '::', insertGroupIndex)
-  console.log('tagId', tagId, '::', insertTagIndex)
-
-  // console.log('onDrop', 'tag: ' + tagId, 'group: ' + groupId, '=>', tagGroup.name)
-  // console.log(tagGroup)
-  // // const dragList = this.lists.find(list => list.id == dragId)
-  // // dragList.category = dropCategory
 
   if (tagId) {
     emit('update:tag', Number(tagId), props.tagTree, insertTagIndex)
@@ -150,39 +158,14 @@ const onDrop = (event: DragEvent, insertGroupIndex: number, insertTagIndex: numb
 }
 
 const dragEnd = () => {
-  console.log('end')
+  isEnterArea.value = null
+  isEnterTop.value = null
+  isEnterBottom.value = null
+  isEnterGroupId.value = null
+  isEnterLeft.value = null
+  isEnterTagId.value = null
+
   draggedTag.value = null
   draggedGroup.value = null
 }
-
-///
-
-const groupEnter = () => {
-  // isDrag.value = true
-  console.log('xx enter ' + props.tagTree.name)
-}
-
-const groupOver = (event: DragEvent) => {
-  // isDrag.value = true
-  // console.log('xx over ' + props.tagTree.name)
-}
-
-// const groupLeave = () => {
-//   isDrag.value = false
-//   console.log('xx leave ' + props.tagTree.name)
-// }
-
-///
-
-// const groupStart = (e, tagGroup: TagGroup) => {
-//   console.log('start group', tagGroup.id, tagGroup.name, e)
-// }
-
-// const groupEnd = (e, tagGroup: TagGroup) => {
-//   console.log('end group', tagGroup.id, tagGroup.name, e)
-// }
-
-// const tagEnd = (e, tag: Tag) => {
-//   console.log('end tag', tag.id, tag.name, e)
-// }
 </script>
