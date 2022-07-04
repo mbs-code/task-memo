@@ -19,8 +19,8 @@ export const useTagTree = (db: Kysely<Tables>, toast: ReturnType<typeof useToast
 
   const onInit = async () => {
     try {
-      tags.value = await tagAPI.getAll({ sort: 'id' })
-      tagGroups.value = await tagGroupAPI.getAll({ sort: 'id' })
+      tags.value = await tagAPI.getAll({ sorts: [['priority', 'asc'], ['id', 'asc']] })
+      tagGroups.value = await tagGroupAPI.getAll({ sorts: [['priority', 'asc'], ['id', 'asc']] })
     } catch (err) {
       toast.catchError(err)
     }

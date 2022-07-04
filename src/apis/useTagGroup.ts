@@ -3,7 +3,10 @@ import { Tables } from '~~/src/databases/Database'
 import { Nullable, SearchModel, SystemColumns } from '~~/src/databases/DBUtil'
 import { TagGroup } from '~~/src/databases/models/TagGroup'
 
-export type SeatchTag = SearchModel<TagGroup>
+export type SeatchTag = SearchModel<TagGroup> & {
+  noGroup?: boolean
+  tagGroupId?: number
+}
 export type FormTag = Nullable<Omit<TagGroup, SystemColumns | 'path'>, 'priority'>
 
 export const useTagGroupAPI = (db: Kysely<Tables>) => {
@@ -11,9 +14,12 @@ export const useTagGroupAPI = (db: Kysely<Tables>) => {
     // タググループを取得する
     const tagGroups = await db.selectFrom('tag_groups')
       .selectAll()
+      .if(Boolean(params?.noGroup), qb => qb.where('tag_group_id', '=', 'null' as unknown as number)) // FIXME: lib bug
+      .if(Boolean(params?.tagGroupId), qb => qb.where('tag_group_id', '=', params.tagGroupId))
       .if(Boolean(params?.perPage), qb => qb.limit(params.perPage))
       .if(Boolean(params?.page), qb => qb.offset(params.page))
-      .if(Boolean(params?.sort), qb => qb.orderBy(params.sort, params?.order ?? 'asc'))
+      .if(Boolean(params?.sort), qb => qb.orderBy(params.sort[0], params.sort[1]))
+      .if(Boolean(params?.sorts), qb => params.sorts.reduce((qb, sort) => qb.orderBy(sort[0], sort[1]), qb))
       .execute()
 
     return tagGroups.map(tg => ({ ...tg }))
@@ -65,11 +71,12 @@ export const useTagGroupAPI = (db: Kysely<Tables>) => {
     return get(tagGroupId)
   }
 
-  const updateGroup = async (tagGroupId: number, parentTagGroupId?: number): Promise<TagGroup> => {
+  const updateGroup = async (tagGroupId: number, parentTagGroupId?: number, priority?: number): Promise<TagGroup> => {
     // タググループのグループのみを更新する
     const { numUpdatedRows } = await db.updateTable('tag_groups')
       .set({
         tag_group_id: parentTagGroupId ?? null,
+        priority: priority ?? 0,
       })
       .where('id', '=', tagGroupId)
       .executeTakeFirst()

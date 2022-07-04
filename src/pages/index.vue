@@ -43,8 +43,7 @@ const reports = ref<ReportWithTag[]>([])
 const onRefresh = async () => {
   try {
     reports.value = await reportAPI.getAll({
-      sort: 'id',
-      order: 'desc',
+      sort: ['id', 'desc'],
     })
 
     await tagTree.onInit()

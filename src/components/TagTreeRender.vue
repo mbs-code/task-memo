@@ -6,6 +6,7 @@
     @dragend.stop="dragEnd"
     @dragenter.prevent="groupEnter"
     @dragover.prevent="groupOver"
+    @drop.stop="onDrop($event, 0, tagTree.tags.length)"
   >
     <div :class="{ 'text-red-500': Boolean(draggedGroup), 'text-blue-500': disabled }">
       ■{{ tagTree.name }} disabled: {{ disabled }}
@@ -13,37 +14,19 @@
 
     <div
       class="p-2 bg-red-100"
-      @drop.stop="onDrop($event, tagTree)"
+      @drop.stop="onDrop($event, 0, tagTree.tags.length)"
     />
-
-    <div
-      v-for="(group, __) in tagTree.groups"
-      :key="`${nest}-g${__}`"
-      class="ml-4"
-    >
-      <TagTreeRender
-        :tag-tree="group"
-        :disabled="childDisabled"
-        :nest="nest + 1"
-        @update:node="($1, $2, $3) => emit('update:node', $1, $2, $3)"
-      />
-
-      <div
-        class="p-2 bg-yellow-100"
-        @drop.stop="onDrop($event, tagTree)"
-      />
-    </div>
 
     <div class="flex flex-wrap">
       <div
         v-if="tagTree.tags.length"
         class="p-2 bg-green-100"
-        @drop.stop="onDrop($event, tagTree)"
+        @drop.stop="onDrop($event, 0, 0)"
       />
 
       <template
-        v-for="(tag, __) in tagTree.tags"
-        :key="`${nest}-t${__}`"
+        v-for="(tag, idx) in tagTree.tags"
+        :key="`${nest}-t${idx}`"
       >
         <Button
           :label="tag.name"
@@ -55,8 +38,8 @@
         />
 
         <div
-          class="p-2 bg-cyan-100"
-          @drop.stop="onDrop($event, tagTree)"
+          class="p-2 bg-blue-100"
+          @drop.stop="onDrop($event, 0, idx + 1)"
         />
       </template>
     </div>
@@ -64,8 +47,27 @@
     <div
       v-if="tagTree.tags.length"
       class="p-2 bg-orange-100"
-      @drop.stop="onDrop($event, tagTree)"
+      @drop.stop="onDrop($event, 0, tagTree.tags.length)"
     />
+
+    <div
+      v-for="(group, idx) in tagTree.groups"
+      :key="`${nest}-g${idx}`"
+      class="ml-4"
+    >
+      <TagTreeRender
+        :tag-tree="group"
+        :disabled="childDisabled"
+        :nest="nest + 1"
+        @update:group="($1, $2, $3) => emit('update:group', $1, $2, $3)"
+        @update:tag="($1, $2, $3) => emit('update:tag', $1, $2, $3)"
+      />
+
+      <div
+        class="p-2 bg-yellow-100"
+        @drop.stop="onDrop($event, idx + 1, tagTree.tags.length)"
+      />
+    </div>
   </div>
 </template>
 
@@ -83,7 +85,8 @@ const props = withDefaults(defineProps<{
   nest: 0,
 })
 const emit = defineEmits<{ // eslint-disable-line func-call-spacing
-  (e: 'update:node', mode: 'tag' | 'group', id: number, targetGroup: TagGroup | null): void
+  (e: 'update:group', id: number, targetGroup: TagGroup | null, insertIndex: number): void,
+  (e: 'update:tag', id: number, targetGroup: TagGroup | null, insertIndex: number): void,
 }>()
 
 // const isDrag = ref<boolean>(false)
@@ -115,49 +118,39 @@ const tagStart = (event: DragEvent, tag: Tag) => {
   event.dataTransfer.setData('tag-id', String(tag.id))
 
   draggedTag.value = tag
+  console.log(draggedTag.value)
 }
 
-const onDrop = (event: DragEvent, tagGroup: TagGroup) => {
+const onDrop = (event: DragEvent, insertGroupIndex: number, insertTagIndex: number) => {
+  // -1 は最大値
+
   const tagId = event.dataTransfer.getData('tag-id') ?? null
   const groupId = event.dataTransfer.getData('group-id') ?? null
-  console.log('onDrop', 'tag: ' + tagId, 'group: ' + groupId, '=>', tagGroup.name)
-  console.log(tagGroup)
-  // const dragList = this.lists.find(list => list.id == dragId)
-  // dragList.category = dropCategory
+  console.log('onDrop:', props.tagTree.name)
+  console.log('groupId', groupId, '::', insertGroupIndex)
+  console.log('tagId', tagId, '::', insertTagIndex)
 
-  // 選択してないと
-  if (props.disabled || Boolean(draggedGroup.value) || Boolean(draggedTag.value)) {
-    console.log('return')
-    draggedTag.value = null
-    draggedGroup.value = null
-    return
-  }
+  // console.log('onDrop', 'tag: ' + tagId, 'group: ' + groupId, '=>', tagGroup.name)
+  // console.log(tagGroup)
+  // // const dragList = this.lists.find(list => list.id == dragId)
+  // // dragList.category = dropCategory
 
   if (tagId) {
-    emit('update:node', 'tag', Number(tagId), tagGroup)
+    emit('update:tag', Number(tagId), props.tagTree, insertTagIndex)
   }
 
-  if (groupId) {
-    emit('update:node', 'group', Number(groupId), tagGroup)
+  // 無効ではなく、自身で持っていない場合は drop 処理
+  if (!(props.disabled || Boolean(draggedGroup.value) || Boolean(draggedTag.value))) {
+    if (groupId) {
+      emit('update:group', Number(groupId), props.tagTree, insertGroupIndex)
+    }
   }
 
-  draggedTag.value = null
-  draggedGroup.value = null
-
-  // if (tagId) {
-  //   const tag = props.tagTree.tags.find(t => t.id === Number(tagId))
-  //   console.log(tag)
-  // }
-
-  // if (groupId) {
-  //   const group = props.tagTree.groups.find(g => g.id === Number(groupId))
-  //   console.log(group)
-  // }
-
-  // emit('update:node')
+  dragEnd()
 }
 
 const dragEnd = () => {
+  console.log('end')
   draggedTag.value = null
   draggedGroup.value = null
 }
