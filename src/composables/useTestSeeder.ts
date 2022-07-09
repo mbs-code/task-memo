@@ -3,7 +3,7 @@
 import { Kysely } from 'kysely'
 import { useReportAPI } from '~~/src/apis/useReportAPI'
 import { useTagAPI } from '~~/src/apis/useTagAPI'
-import { useTagGroupAPI } from '~~/src/apis/useTagGroup'
+import { useTagGroupAPI } from '~~/src/apis/useTagGroupAPI'
 import { Tables } from '~~/src/databases/Database'
 
 export const useTestSeeder = (db: Kysely<Tables>) => {

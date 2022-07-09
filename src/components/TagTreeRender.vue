@@ -11,7 +11,28 @@
     @dragover.prevent
   >
     <div :class="{ 'text-red-500': Boolean(draggedGroup), 'text-blue-500': disabled }">
-      ■{{ tagTree.name }} disabled: {{ disabled }}
+      <span>■{{ tagTree.name }}</span>
+      <Button
+        v-if="nest !== 0"
+        class="p-button-text"
+        @click="onTagGroupClick(tagTree, tagTree)"
+      >
+        Edit
+      </Button>
+
+      <Button
+        class="p-button-text"
+        @click="onTagGroupClick(null, tagTree)"
+      >
+        NewTagGroup
+      </Button>
+
+      <Button
+        class="p-button-text"
+        @click="onTagClick(null, tagTree)"
+      >
+        NewTag
+      </Button>
     </div>
 
     <div
@@ -44,6 +65,7 @@
           @drop.stop
           @dragstart.stop="tagStart($event, tag)"
           @dragend.stop="dragEnd"
+          @click="onTagClick(tag, tagTree)"
         />
 
         <div
@@ -74,8 +96,8 @@
         :tag-tree="group"
         :disabled="childDisabled"
         :nest="nest + 1"
-        @update:group="($1, $2, $3) => emit('update:group', $1, $2, $3)"
-        @update:tag="($1, $2, $3) => emit('update:tag', $1, $2, $3)"
+        @delete:group="($1) => emit('delete:group', $1)"
+        @delete:tag="($1) => emit('delete:tag', $1)"
       />
 
       <div
@@ -90,7 +112,8 @@
 </template>
 
 <script setup lang="ts">
-import { TagTreeItem } from '~~/src/composables/reports/useTagTree'
+import { onTagClickKey, onTagGroupClickKey, tagTreeActionKey } from '~~/src/components/TagTree.vue'
+import { TagTreeItem } from '~~/src/composables/reports/useTagTreeAction'
 import { Tag } from '~~/src/databases/models/Tag'
 import { TagGroup } from '~~/src/databases/models/TagGroup'
 
@@ -103,9 +126,15 @@ const props = withDefaults(defineProps<{
   nest: 0,
 })
 const emit = defineEmits<{ // eslint-disable-line func-call-spacing
-  (e: 'update:group', id: number, targetGroup: TagGroup | null, insertIndex: number): void,
-  (e: 'update:tag', id: number, targetGroup: TagGroup | null, insertIndex: number): void,
+  (e: 'delete:group', id: number): void,
+  (e: 'delete:tag', id: number): void,
 }>()
+
+const tagTreeAction = inject(tagTreeActionKey)
+const onTagGroupClick = inject(onTagGroupClickKey)
+const onTagClick = inject(onTagClickKey)
+
+///
 
 const isEnterArea = ref<boolean>(false)
 const isEnterTop = ref<boolean>(false)
@@ -144,17 +173,25 @@ const onDrop = (event: DragEvent, insertGroupIndex: number, insertTagIndex: numb
   const groupId = event.dataTransfer.getData('group-id') ?? null
 
   if (tagId) {
-    emit('update:tag', Number(tagId), props.tagTree, insertTagIndex)
+    tagTreeAction.onUpdateTag(Number(tagId), props.tagTree, insertTagIndex)
   }
 
   // 無効ではなく、自身で持っていない場合は drop 処理
   if (!(props.disabled || Boolean(draggedGroup.value) || Boolean(draggedTag.value))) {
     if (groupId) {
-      emit('update:group', Number(groupId), props.tagTree, insertGroupIndex)
+      tagTreeAction.onUpdateGroup(Number(groupId), props.tagTree, insertGroupIndex)
     }
   }
 
   dragEnd()
+}
+
+const onDeleteGroup = (tagGroup: TagGroup) => {
+  emit('delete:group', tagGroup.id)
+}
+
+const onDeleteTag = (tag: Tag) => {
+  emit('delete:tag', tag.id)
 }
 
 const dragEnd = () => {

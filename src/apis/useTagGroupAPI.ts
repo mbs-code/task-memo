@@ -7,7 +7,7 @@ export type SeatchTag = SearchModel<TagGroup> & {
   noGroup?: boolean
   tagGroupId?: number
 }
-export type FormTag = Nullable<Omit<TagGroup, SystemColumns | 'path'>, 'priority'>
+export type FormTagGroup = Nullable<Omit<TagGroup, SystemColumns | 'path'>, 'priority'>
 
 export const useTagGroupAPI = (db: Kysely<Tables>) => {
   const getAll = async (params?: SeatchTag): Promise<TagGroup[]> => {
@@ -35,7 +35,7 @@ export const useTagGroupAPI = (db: Kysely<Tables>) => {
     return { ...tagGroup }
   }
 
-  const create = async (form: FormTag): Promise<TagGroup> => {
+  const create = async (form: FormTagGroup): Promise<TagGroup> => {
     // タググループを作成する
     const { insertId } = await db.insertInto('tag_groups')
       .values({
@@ -51,7 +51,7 @@ export const useTagGroupAPI = (db: Kysely<Tables>) => {
     return get(Number(insertId))
   }
 
-  const update = async (tagGroupId: number, form: FormTag): Promise<TagGroup> => {
+  const update = async (tagGroupId: number, form: FormTagGroup): Promise<TagGroup> => {
     // タググループを更新する
     const { numUpdatedRows } = await db.updateTable('tag_groups')
       .set({
@@ -89,19 +89,17 @@ export const useTagGroupAPI = (db: Kysely<Tables>) => {
   }
 
   const remove = async (tagGroupId: number): Promise<boolean> => {
-    // 関連する tag から親をを消す
-    await db.updateTable('tags')
-      .set({ tag_group_id: null })
+    // 関連する tag を消す
+    await db.deleteFrom('tags')
       .where('tag_group_id', '=', tagGroupId)
       .executeTakeFirst()
 
-    // 関連する tagGroup から親をを消す
-    await db.updateTable('tag_groups')
-      .set({ tag_group_id: null })
+    // 関連する tagGroup を消す
+    await db.deleteFrom('tag_groups')
       .where('tag_group_id', '=', tagGroupId)
       .executeTakeFirst()
 
-    // タグを削除する
+    // タググループを削除する
     const { numDeletedRows } = await db.deleteFrom('tag_groups')
       .where('id', '=', tagGroupId)
       .executeTakeFirst()
@@ -110,9 +108,9 @@ export const useTagGroupAPI = (db: Kysely<Tables>) => {
   }
 
   const clear = async (): Promise<number> => {
-    // 関連する tag から親をを消す
-    await db.updateTable('tags')
-      .set({ tag_group_id: null })
+    // 関連する tag を消す
+    await db.deleteFrom('tags')
+      .where('tag_group_id', 'is not', null)
       .executeTakeFirst()
 
     // タググループを削除する
