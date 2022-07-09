@@ -35,7 +35,7 @@ export const useBookmarkAPI = (db: Kysely<Tables>) => {
     const { insertId } = await db.insertInto('bookmarks')
       .values({
         text: form.text,
-        color: form.color,
+        color: form.color || null,
         priority: form.priority ?? 0,
         created_at: new Date(),
         updated_at: new Date(),
@@ -50,7 +50,7 @@ export const useBookmarkAPI = (db: Kysely<Tables>) => {
     const { numUpdatedRows } = await db.updateTable('bookmarks')
       .set({
         text: form.text,
-        color: form.color,
+        color: form.color || null,
         priority: form.priority ?? 0,
         updated_at: new Date(),
       })

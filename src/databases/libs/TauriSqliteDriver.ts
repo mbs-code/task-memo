@@ -85,9 +85,6 @@ class TauriSqliteConnection implements DatabaseConnection {
                 fmtValue = fmtValue != null ? Boolean(value) : null
               }
 
-              // value が 'null' なら null に変換（// FIXME: libのバグ）
-              if (fmtValue === 'null') { fmtValue = null }
-
               return [key, fmtValue]
             })
 

@@ -1,6 +1,6 @@
 import { Kysely } from 'kysely'
 import { Tables } from '~~/src/databases/Database'
-import { Nullable, SearchModel, SearchSort, SystemColumns } from '~~/src/databases/DBUtil'
+import { Nullable, SearchModel, SystemColumns } from '~~/src/databases/DBUtil'
 import { Tag } from '~~/src/databases/models/Tag'
 
 export type SeatchTag = SearchModel<Tag> & {
@@ -14,7 +14,7 @@ export const useTagAPI = (db: Kysely<Tables>) => {
     // タグ配列を取得する
     const tags = await db.selectFrom('tags')
       .selectAll()
-      .if(Boolean(params?.noGroup), qb => qb.where('tag_group_id', '=', 'null' as unknown as number)) // FIXME: lib bug
+      .if(Boolean(params?.noGroup), qb => qb.where('tag_group_id', 'is', null))
       .if(Boolean(params?.tagGroupId), qb => qb.where('tag_group_id', '=', params.tagGroupId))
       .if(Boolean(params?.perPage), qb => qb.limit(params.perPage))
       .if(Boolean(params?.page), qb => qb.offset(params.page))
@@ -50,10 +50,10 @@ export const useTagAPI = (db: Kysely<Tables>) => {
     const { insertId } = await db.insertInto('tags')
       .values({
         name: form.name,
-        color: form.color,
+        color: form.color || null,
         is_pinned: form.is_pinned ?? false,
         priority: form.priority ?? 0,
-        tag_group_id: form.tag_group_id,
+        tag_group_id: form.tag_group_id || null,
         created_at: new Date(),
         updated_at: new Date(),
       })
@@ -67,10 +67,10 @@ export const useTagAPI = (db: Kysely<Tables>) => {
     const { numUpdatedRows } = await db.updateTable('tags')
       .set({
         name: form.name,
-        color: form.color,
+        color: form.color || null,
         is_pinned: form.is_pinned ?? false,
         priority: form.priority ?? 0,
-        tag_group_id: form.tag_group_id,
+        tag_group_id: form.tag_group_id || null,
         updated_at: new Date(),
       })
       .where('id', '=', tagId)
@@ -87,7 +87,7 @@ export const useTagAPI = (db: Kysely<Tables>) => {
     // タグのグループのみを更新する
     const { numUpdatedRows } = await db.updateTable('tags')
       .set({
-        tag_group_id: tagGroupId ?? null,
+        tag_group_id: tagGroupId || null,
         priority: priority ?? 0,
       })
       .where('id', '=', tagId)

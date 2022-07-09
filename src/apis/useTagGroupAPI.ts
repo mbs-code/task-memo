@@ -14,7 +14,7 @@ export const useTagGroupAPI = (db: Kysely<Tables>) => {
     // タググループを取得する
     const tagGroups = await db.selectFrom('tag_groups')
       .selectAll()
-      .if(Boolean(params?.noGroup), qb => qb.where('tag_group_id', '=', 'null' as unknown as number)) // FIXME: lib bug
+      .if(Boolean(params?.noGroup), qb => qb.where('tag_group_id', 'is', null))
       .if(Boolean(params?.tagGroupId), qb => qb.where('tag_group_id', '=', params.tagGroupId))
       .if(Boolean(params?.perPage), qb => qb.limit(params.perPage))
       .if(Boolean(params?.page), qb => qb.offset(params.page))
@@ -40,9 +40,9 @@ export const useTagGroupAPI = (db: Kysely<Tables>) => {
     const { insertId } = await db.insertInto('tag_groups')
       .values({
         name: form.name,
-        color: form.color,
+        color: form.color || null,
         priority: form.priority ?? 0,
-        tag_group_id: form.tag_group_id,
+        tag_group_id: form.tag_group_id || null,
         created_at: new Date(),
         updated_at: new Date(),
       })
@@ -56,9 +56,9 @@ export const useTagGroupAPI = (db: Kysely<Tables>) => {
     const { numUpdatedRows } = await db.updateTable('tag_groups')
       .set({
         name: form.name,
-        color: form.color,
+        color: form.color || null,
         priority: form.priority ?? 0,
-        tag_group_id: form.tag_group_id,
+        tag_group_id: form.tag_group_id || null,
         updated_at: new Date(),
       })
       .where('id', '=', tagGroupId)
@@ -75,7 +75,7 @@ export const useTagGroupAPI = (db: Kysely<Tables>) => {
     // タググループのグループのみを更新する
     const { numUpdatedRows } = await db.updateTable('tag_groups')
       .set({
-        tag_group_id: parentTagGroupId ?? null,
+        tag_group_id: parentTagGroupId || null,
         priority: priority ?? 0,
       })
       .where('id', '=', tagGroupId)

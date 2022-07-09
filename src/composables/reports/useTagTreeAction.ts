@@ -31,12 +31,12 @@ export const useTagTreeAction = (db: Kysely<Tables>, toast: ReturnType<typeof us
   const _mapped = (tagGroup?: TagGroup) => {
     // 子グループを探索して再起取得する
     const childGroups = tagGroups.value
-      .filter(tg => tg.tag_group_id === (tagGroup?.id || null))
+      .filter(tg => tg.tag_group_id === (tagGroup?.id ?? null))
       .map(tg => _mapped(tg))
 
     // このグループに紐づくタグを取得
     const childTags = tags.value
-      .filter(t => t.tag_group_id === (tagGroup?.id || null))
+      .filter(t => t.tag_group_id === (tagGroup?.id ?? null))
 
     // 結合して返却する
     return {
