@@ -12,12 +12,16 @@
   }
 
   .p-dialog-content {
-    padding: 0.5rem;
+    padding: 1rem;
   }
 
   .p-dialog-footer {
-    padding: 1rem;
+    padding: 0.5rem;
     border-top: 1px solid;
     border-color: var(--surface-ground);
+
+    button {
+      min-width: 3rem;
+    }
   }
 }

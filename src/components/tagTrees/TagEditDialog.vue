@@ -4,38 +4,43 @@
     header="タグ設定"
     :modal="true"
     :maximizable="true"
+    :style="{ width: '400px' }"
   >
     <div class="field">
       <label>タグ名</label>
-      <InputText v-model="form.name" />
+      <InputText
+        v-model="form.name"
+        class="w-full"
+        autofocus
+      />
     </div>
 
     <div class="field">
       <label>色</label>
-      <InputText v-model="form.color" />
+      <InputText
+        v-model="form.color"
+        class="w-full"
+      />
     </div>
 
     <template #footer>
-      <Button
-        label="Delete"
-        icon="pi pi-times"
-        class="p-button-text"
-        @click="onDelete"
-      />
+      <div class="flex">
+        <Button
+          icon="pi pi-trash"
+          class="p-button-text p-button-danger"
+          @click="onDelete"
+        />
 
-      <Button
-        label="No"
-        icon="pi pi-times"
-        class="p-button-text"
-        @click="onClose"
-      />
-      <Button
-        label="Yes"
-        icon="pi pi-check"
-        class="p-button-text"
-        autofocus
-        @click="onSave"
-      />
+        <div class="flex-grow-1" />
+
+        <Button
+          icon="pi pi-save"
+          class="p-button-text p-button-success"
+          label="保存"
+          autofocus
+          @click="onSave"
+        />
+      </div>
     </template>
   </Dialog>
 </template>
