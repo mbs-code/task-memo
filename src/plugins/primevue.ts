@@ -12,6 +12,7 @@ import InputText from 'primevue/inputtext'
 import Textarea from 'primevue/textarea'
 import AutoComplete from 'primevue/autocomplete'
 import Checkbox from 'primevue/checkbox'
+import InputSwitch from 'primevue/inputswitch'
 import InputNumber from 'primevue/inputnumber'
 import Toast from 'primevue/toast'
 import Dialog from 'primevue/dialog'
@@ -30,6 +31,7 @@ export default defineNuxtPlugin((nuxtApp) => {
   nuxtApp.vueApp.component('Textarea', Textarea)
   nuxtApp.vueApp.component('AutoComplete', AutoComplete)
   nuxtApp.vueApp.component('Checkbox', Checkbox)
+  nuxtApp.vueApp.component('InputSwitch', InputSwitch)
   nuxtApp.vueApp.component('InputNumber', InputNumber)
   nuxtApp.vueApp.component('Toast', Toast)
   nuxtApp.vueApp.component('Dialog', Dialog)

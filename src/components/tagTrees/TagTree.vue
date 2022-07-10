@@ -1,12 +1,19 @@
 <template>
-  <div>
-    <TagTreeRender
-      :tag-tree="tagTreeAction.tagTree.value"
-      :disabled="false"
-      @delete:group="onDeleteGroup"
-      @delete:tag="onDeleteTag"
-    />
-  </div>
+  <Card>
+    <template #content>
+      <TagTreeRender
+        :tag-tree="tagTreeAction.tagTree.value"
+        :disabled="!isEdit"
+        @delete:group="onDeleteGroup"
+        @delete:tag="onDeleteTag"
+      >
+        <template #header>
+          <InputSwitch v-model="isEdit" />
+          <i class="pi pi-pencil" />
+        </template>
+      </TagTreeRender>
+    </template>
+  </Card>
 
   <TagGroupEditDialog
     v-model:visible="showTagGroupEditDialog"
@@ -23,8 +30,6 @@
     @update:tag="tagTreeAction.onInit()"
     @delete:tag="tagTreeAction.onInit()"
   />
-
-  <!-- <TagTreeNested v-model:tasks="data" :disabled="false" /> -->
 </template>
 
 <script lang="ts">
@@ -46,8 +51,11 @@ const props = defineProps<{
   tagTreeAction: ReturnType<typeof useTagTreeAction>,
 }>()
 const emit = defineEmits<{ // eslint-disable-line func-call-spacing
-  (e: 'update'): void
+  (e: 'update'): void,
+  (e: 'select:tag', tag: Tag): void,
 }>()
+
+const isEdit = ref<boolean>(false)
 
 const { db } = Database.getInstance()
 const tagAPI = useTagAPI(db)
@@ -61,15 +69,21 @@ const selectedTagGroup = ref<TagGroup>()
 const selectedTag = ref<Tag>()
 
 const onTagGroupClick = (tagGroup?: TagGroup, parentTagGroup?: TagGroup) => {
-  selectedTagGroup.value = tagGroup
-  selectedParentTagGroup.value = parentTagGroup
-  showTagGroupEditDialog.value = true
+  if (isEdit.value) {
+    selectedTagGroup.value = tagGroup
+    selectedParentTagGroup.value = parentTagGroup
+    showTagGroupEditDialog.value = true
+  }
 }
 
 const onTagClick = (tag?: Tag, parentTagGroup?: TagGroup) => {
-  selectedTag.value = tag
-  selectedParentTagGroup.value = parentTagGroup
-  showTagEditDialog.value = true
+  if (isEdit.value) {
+    selectedTag.value = tag
+    selectedParentTagGroup.value = parentTagGroup
+    showTagEditDialog.value = true
+  } else {
+    emit('select:tag', tag)
+  }
 }
 
 provide(tagTreeActionKey, props.tagTreeAction)
