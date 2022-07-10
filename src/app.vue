@@ -7,6 +7,7 @@
     </div>
 
     <Toast />
+    <ConfirmDialog />
   </div>
 </template>
 

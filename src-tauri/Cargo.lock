@@ -3181,8 +3181,8 @@ dependencies = [
 
 [[package]]
 name = "tauri-plugin-sql"
-version = "0.0.1"
-source = "git+https://github.com/tauri-apps/tauri-plugin-sql?rev=d8ea61f2cbe2dfc9bf0947bab87b1547dcc945d4#d8ea61f2cbe2dfc9bf0947bab87b1547dcc945d4"
+version = "0.0.0"
+source = "git+https://github.com/mbs-code/tauri-plugin-sql?rev=bed077ab82d05fb07e64634cba8826e1af6057e1#bed077ab82d05fb07e64634cba8826e1af6057e1"
 dependencies = [
  "futures",
  "serde",

@@ -1,12 +1,12 @@
 <template>
   <div>
-    <TagTree :tag-trees="tagTree.tagTrees.value" />
+    <TagTree :tag-tree-action="tagTreeAction" @select:tag="onSelectedTag" />
 
     <Card class="m-2">
       <template #content>
         <ReportEditBox
           disable-close
-          :tags="tagTree.tags.value"
+          :tags="tagTreeAction.tags.value"
           @reload="onRefresh"
         />
       </template>
@@ -16,7 +16,7 @@
       v-for="report of reports"
       :key="report.id"
       :report="report"
-      :tags="tagTree.tags.value"
+      :tags="tagTreeAction.tags.value"
       @reload="onRefresh"
     />
 
@@ -26,26 +26,30 @@
 
 <script setup lang="ts">
 import { useReportAPI } from '~~/src/apis/useReportAPI'
-import { useTagTree } from '~~/src/composables/reports/useTagTree'
+import { useTagTreeAction } from '~~/src/composables/reports/useTagTreeAction'
 import { Database } from '~~/src/databases/Database'
 import { ReportWithTag } from '~~/src/databases/models/Report'
+import { Tag } from '~~/src/databases/models/Tag'
 
 const { db } = Database.getInstance()
 const reportAPI = useReportAPI(db)
 const toast = useToast()
 
-const tagTree = useTagTree(db, toast)
+const tagTreeAction = useTagTreeAction(db, toast)
 
 const reports = ref<ReportWithTag[]>([])
+
+const onSelectedTag = (tag?: Tag) => {
+  console.log(tag)
+}
 
 const onRefresh = async () => {
   try {
     reports.value = await reportAPI.getAll({
-      sort: 'id',
-      order: 'desc',
+      sort: ['id', 'desc'],
     })
 
-    await tagTree.onInit()
+    await tagTreeAction.onInit()
   } catch (err) {
     toast.catchError(err)
   }

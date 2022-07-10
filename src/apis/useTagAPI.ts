@@ -3,7 +3,10 @@ import { Tables } from '~~/src/databases/Database'
 import { Nullable, SearchModel, SystemColumns } from '~~/src/databases/DBUtil'
 import { Tag } from '~~/src/databases/models/Tag'
 
-export type SeatchTag = SearchModel<Tag>
+export type SeatchTag = SearchModel<Tag> & {
+  noGroup?: boolean
+  tagGroupId?: number
+}
 export type FormTag = Nullable<Omit<Tag, SystemColumns | 'path'>, 'is_pinned' | 'priority'>
 
 export const useTagAPI = (db: Kysely<Tables>) => {
@@ -11,9 +14,12 @@ export const useTagAPI = (db: Kysely<Tables>) => {
     // タグ配列を取得する
     const tags = await db.selectFrom('tags')
       .selectAll()
+      .if(Boolean(params?.noGroup), qb => qb.where('tag_group_id', 'is', null))
+      .if(Boolean(params?.tagGroupId), qb => qb.where('tag_group_id', '=', params.tagGroupId))
       .if(Boolean(params?.perPage), qb => qb.limit(params.perPage))
       .if(Boolean(params?.page), qb => qb.offset(params.page))
-      .if(Boolean(params?.sort), qb => qb.orderBy(params.sort, params?.order ?? 'asc'))
+      .if(Boolean(params?.sort), qb => qb.orderBy(params.sort[0], params.sort[1]))
+      .if(Boolean(params?.sorts), qb => params.sorts.reduce((qb, sort) => qb.orderBy(sort[0], sort[1]), qb))
       .execute()
 
     return tags.map(tag => ({ ...tag }))
@@ -44,10 +50,10 @@ export const useTagAPI = (db: Kysely<Tables>) => {
     const { insertId } = await db.insertInto('tags')
       .values({
         name: form.name,
-        color: form.color,
+        color: form.color || null,
         is_pinned: form.is_pinned ?? false,
         priority: form.priority ?? 0,
-        tag_group_id: form.tag_group_id,
+        tag_group_id: form.tag_group_id || null,
         created_at: new Date(),
         updated_at: new Date(),
       })
@@ -57,15 +63,32 @@ export const useTagAPI = (db: Kysely<Tables>) => {
   }
 
   const update = async (tagId: number, form: FormTag): Promise<Tag> => {
-    // レポートを更新する
+    // タグを更新する
     const { numUpdatedRows } = await db.updateTable('tags')
       .set({
         name: form.name,
-        color: form.color,
+        color: form.color || null,
         is_pinned: form.is_pinned ?? false,
         priority: form.priority ?? 0,
-        tag_group_id: form.tag_group_id,
+        tag_group_id: form.tag_group_id || null,
         updated_at: new Date(),
+      })
+      .where('id', '=', tagId)
+      .executeTakeFirst()
+
+    if (Number(numUpdatedRows) === 0) {
+      throw new Error('no result')
+    }
+
+    return get(tagId)
+  }
+
+  const updateGroup = async (tagId: number, tagGroupId?: number, priority?: number): Promise<Tag> => {
+    // タグのグループのみを更新する
+    const { numUpdatedRows } = await db.updateTable('tags')
+      .set({
+        tag_group_id: tagGroupId || null,
+        priority: priority ?? 0,
       })
       .where('id', '=', tagId)
       .executeTakeFirst()
@@ -109,6 +132,7 @@ export const useTagAPI = (db: Kysely<Tables>) => {
     getByName,
     create,
     update,
+    updateGroup,
     remove,
     clear,
   }

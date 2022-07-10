@@ -13,7 +13,8 @@ export const useBookmarkAPI = (db: Kysely<Tables>) => {
       .selectAll()
       .if(Boolean(params?.perPage), qb => qb.limit(params.perPage))
       .if(Boolean(params?.page), qb => qb.offset(params.page))
-      .if(Boolean(params?.sort), qb => qb.orderBy(params.sort, params?.order ?? 'asc'))
+      .if(Boolean(params?.sort), qb => qb.orderBy(params.sort[0], params.sort[1]))
+      .if(Boolean(params?.sorts), qb => params.sorts.reduce((qb, sort) => qb.orderBy(sort[0], sort[1]), qb))
       .execute()
 
     return bookmarks.map(bookmark => ({ ...bookmark }))
@@ -34,7 +35,7 @@ export const useBookmarkAPI = (db: Kysely<Tables>) => {
     const { insertId } = await db.insertInto('bookmarks')
       .values({
         text: form.text,
-        color: form.color,
+        color: form.color || null,
         priority: form.priority ?? 0,
         created_at: new Date(),
         updated_at: new Date(),
@@ -49,7 +50,7 @@ export const useBookmarkAPI = (db: Kysely<Tables>) => {
     const { numUpdatedRows } = await db.updateTable('bookmarks')
       .set({
         text: form.text,
-        color: form.color,
+        color: form.color || null,
         priority: form.priority ?? 0,
         updated_at: new Date(),
       })

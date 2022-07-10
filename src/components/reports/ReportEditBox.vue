@@ -95,7 +95,7 @@
     </div>
   </div>
 
-  <TagEditDialog
+  <TagEditDialogd
     v-model:visible="showTagEditDialog"
     :report-tag-action="tagAction"
   />
