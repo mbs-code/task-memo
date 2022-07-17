@@ -112,8 +112,8 @@ export const useTagTreeAction = (db: Kysely<Tables>, toast: ReturnType<typeof us
   }
 
   return {
-    tags: readonly(tags),
-    tagGroups: readonly(tagGroups),
+    tags,
+    tagGroups,
     tagTree,
 
     onInit,

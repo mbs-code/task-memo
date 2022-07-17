@@ -15,51 +15,20 @@
           @click="openTagEditDialog"
         />
 
-        <Button
-          v-for="tag of tagAction.formSelectedTags.value"
-          :key="tag.name"
-          class="report-tag-button p-button-secondary"
-          :style="{
-            backgroundColor: tag.color,
-            color: fontColorContrast(tag.color, 0.7)
-          }"
-          @click="tagAction.onRemoveTag(tag)"
-        >
-          <div class="flex gap-2">
-            <i class="pi pi-tag" />
-            <span>{{ tag.name }}</span>
-            <i class="pi pi-times-circle" />
-          </div>
-        </Button>
-
-        <Button
-          v-for="name of tagAction.formTagNames.value"
-          :key="name"
-          class="report-tag-button p-button-secondary p-button-outlined"
-          icon="pi pi-pencil"
-          :label="name"
-          @click="tagAction.onRemoveTag(name)"
-        >
-          <div class="flex gap-2">
-            <i class="pi pi-tag" />
-            <span>{{ name }}</span>
-            <i class="pi pi-times-circle" />
-          </div>
-        </Button>
+        <ReportTagButtonGroup
+          :tags="formSelectedTags"
+          :tag-names="formInputTagNames"
+          @remove:tag="onRemoveTag"
+        />
 
         <div class="flex gap-1 align-items-center">
           <div class="text-sm">
             新規タグ:
           </div>
-          <AutoComplete
-            v-model="tagAction.inputTagName.value"
-            :suggestions="tagAction.filteredInputTags.value"
-            complete-on-focus
-            style="height: 2rem"
-            @complete="tagAction.onSuggestedTags"
-            @item-select="tagAction.onSelectedTag"
-            @change="tagAction.onAddTag"
-            @keydown.ctrl.enter.stop="tagAction.onAddTag"
+
+          <ReportTagInput
+            :tags="tagTreeAction.tags.value"
+            @add:tag="onAddTag"
           />
         </div>
       </div>
@@ -80,7 +49,7 @@
 
         <div class="spacer" />
 
-        <span>タグ: {{ tagAction.formSelectedTags.value.length }}</span>
+        <span>タグ: {{ formTagNames.length }}</span>
         <span>行数: {{ textCount }}</span>
         <span>文字数: {{ lineCount }}</span>
       </div>
@@ -95,19 +64,22 @@
     </div>
   </div>
 
-  <TagEditDialogd
+  <ReportTagEditDialog
     v-model:visible="showTagEditDialog"
-    :report-tag-action="tagAction"
+    :selected-tags="formSelectedTags"
+    :input-tag-names="formInputTagNames"
+    :tag-tree-action="tagTreeAction"
+    @add:tag="onAddTag"
+    @remove:tag="onRemoveTag"
   />
 </template>
 
 <script setup lang="ts">
-import fontColorContrast from 'font-color-contrast'
 import { FormReport, useReportAPI } from '~~/src/apis/useReportAPI'
 import { Database } from '~~/src/databases/Database'
 import { ReportWithTag } from '~~/src/databases/models/Report'
+import { useTagTreeAction } from '~~/src/composables/reports/useTagTreeAction'
 import { Tag } from '~~/src/databases/models/Tag'
-import { useReportTagAction } from '~~/src/composables/reports/useReportTagAction'
 
 type Emit = {
   (e: 'reload'): void
@@ -116,7 +88,7 @@ type Emit = {
 const emit = defineEmits<Emit>()
 const props = defineProps<{
   report?: ReportWithTag,
-  tags: Tag[],
+  tagTreeAction: ReturnType<typeof useTagTreeAction>,
   disableClose?: boolean,
 }>()
 
@@ -124,25 +96,32 @@ const { db } = Database.getInstance()
 const reportAPI = useReportAPI(db)
 const toast = useToast()
 
-const tagAction = useReportTagAction(
-  computed(() => props.tags),
-  (name) => { toast.warn(`「${name}」は追加済みです。`) },
-)
+const tags = computed(() => props.tagTreeAction.tags.value)
 
 const form = reactive<FormReport>({
   text: '',
   tagNames: [],
 })
+const formSelectedTags = ref<Tag[]>([]) // 選択したタグ
+const formInputTagNames = ref<string[]>([]) // 新規に入力したタグ
+const formTagNames = computed(() => { // タグ名配列
+  const names = formSelectedTags.value.map(t => t.name)
+  names.push(...formInputTagNames.value)
+  return names
+})
 
 const lineCount = computed(() => form.text?.length ?? 0)
 const textCount = computed(() => ((form.text ?? '').match(/\n/g) || []).length + 1)
 
+/// //////////////////////////////////////////////////
+
 const onInit = () => {
   form.text = props.report?.text || null
+  form.tagNames = []
 
-  tagAction.formSelectedTags.value = props.report?.tags ?? []
-  tagAction.formTagNames.value = []
-  tagAction.inputTagName.value = ''
+  // タグ保管
+  formSelectedTags.value = props.report?.tags ?? []
+  formInputTagNames.value = []
 }
 
 const onSave = async () => {
@@ -152,7 +131,7 @@ const onSave = async () => {
   try {
     const data: FormReport = {
       ...form,
-      tagNames: tagAction.getTagNames(),
+      tagNames: formTagNames.value,
     }
 
     const reportId = props.report?.id
@@ -187,6 +166,45 @@ watch(() => props.report, () => {
   onInit()
   onFocusTextarea()
 })
+
+/// //////////////////////////////////////////////////
+
+const onAddTag = (name: string) => {
+  // タグにあるか判断
+  const tag = tags.value.find(t => t.name === name)
+  if (tag) {
+    // タグにあれば、既に存在していないことを確認して追加
+    const exist = formSelectedTags.value.find(t => t.id === tag.id)
+    if (!exist) {
+      formSelectedTags.value.push({ ...tag })
+    } else {
+      toast.warn(`「${name}」は追加済みです。`)
+    }
+  } else {
+    // タグに無ければ、文字列追加を行う
+    const exist = formInputTagNames.value.find(n => n === name)
+    if (!exist) {
+      formInputTagNames.value.push(name)
+    } else {
+      toast.warn(`「${name}」は追加済みです。`)
+    }
+  }
+}
+
+// タグを削除する
+const onRemoveTag = (name: string) => {
+  // タグ配列にあるか判断
+  const tagIdx = formSelectedTags.value.findIndex(t => t.name === name)
+  if (tagIdx >= 0) {
+    formSelectedTags.value.splice(tagIdx, 1)
+  }
+
+  // 文字列配列にあつか判断
+  const inputIdx = formInputTagNames.value.findIndex(n => n === name)
+  if (inputIdx >= 0) {
+    formInputTagNames.value.splice(inputIdx, 1)
+  }
+}
 
 /// //////////////////////////////////////////////////
 

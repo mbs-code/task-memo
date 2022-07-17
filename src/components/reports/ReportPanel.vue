@@ -10,7 +10,7 @@
       <ReportEditBox
         v-else
         :report="report"
-        :tags="tags"
+        :tag-tree-action="tagTreeAction"
         @close="isEdit = false"
         @reload="emit('reload')"
       />
@@ -19,8 +19,8 @@
 </template>
 
 <script setup lang="ts">
+import { useTagTreeAction } from '~~/src/composables/reports/useTagTreeAction'
 import { ReportWithTag } from '~~/src/databases/models/Report'
-import { Tag } from '~~/src/databases/models/Tag'
 
 type Emit = {
   (e: 'reload'): void
@@ -28,7 +28,7 @@ type Emit = {
 const emit = defineEmits<Emit>()
 defineProps<{
   report: ReportWithTag,
-  tags: Tag[],
+  tagTreeAction: ReturnType<typeof useTagTreeAction>,
 }>()
 
 const isEdit = ref<boolean>(false)

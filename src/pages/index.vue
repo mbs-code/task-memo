@@ -6,7 +6,7 @@
       <template #content>
         <ReportEditBox
           disable-close
-          :tags="tagTreeAction.tags.value"
+          :tag-tree-action="tagTreeAction"
           @reload="onRefresh"
         />
       </template>
@@ -16,7 +16,7 @@
       v-for="report of reports"
       :key="report.id"
       :report="report"
-      :tags="tagTreeAction.tags.value"
+      :tag-tree-action="tagTreeAction"
       @reload="onRefresh"
     />
 
