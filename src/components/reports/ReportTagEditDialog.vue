@@ -6,7 +6,7 @@
     :maximizable="true"
   >
     <div class="grid p-2">
-      <div class="col flex flex-column gap-2">
+      <div class="col md-6 flex flex-column gap-2">
         <div class="flex gap-1 align-items-center">
           <div class="text-sm">
             新規タグ:
@@ -29,7 +29,7 @@
         </div>
       </div>
 
-      <div class="col">
+      <div class="col md-6">
         <TagTree :tag-tree-action="tagTreeAction" @select:tag="onSelectedTag" />
       </div>
     </div>

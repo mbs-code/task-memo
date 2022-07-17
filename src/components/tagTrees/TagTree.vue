@@ -1,19 +1,15 @@
 <template>
-  <Card>
-    <template #content>
-      <TagTreeRender
-        :tag-tree="tagTreeAction.tagTree.value"
-        :disabled="!isEdit"
-        @delete:group="onDeleteGroup"
-        @delete:tag="onDeleteTag"
-      >
-        <template #header>
-          <InputSwitch v-model="isEdit" />
-          <i class="pi pi-pencil" />
-        </template>
-      </TagTreeRender>
+  <TagTreeRender
+    :tag-tree="tagTreeAction.tagTree.value"
+    :disabled="!isEdit"
+    @delete:group="onDeleteGroup"
+    @delete:tag="onDeleteTag"
+  >
+    <template #header>
+      <InputSwitch v-model="isEdit" />
+      <i class="pi pi-pencil" />
     </template>
-  </Card>
+  </TagTreeRender>
 
   <TagGroupEditDialog
     v-model:visible="showTagGroupEditDialog"
