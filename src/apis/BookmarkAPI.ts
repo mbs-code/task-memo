@@ -1,15 +1,15 @@
-import { Kysely } from 'kysely'
-import { Tables } from '~~/src/databases/Database'
+import { Database } from '~~/src/databases/Database'
 import { Nullable, SearchModel, SystemColumns } from '~~/src/databases/DBUtil'
 import { Bookmark } from '~~/src/databases/models/Bookmark'
 
 export type SearchBookmark = SearchModel<Bookmark>
 export type FormBookmark = Nullable<Omit<Bookmark, SystemColumns>, 'priority'>
 
-export const useBookmarkAPI = (db: Kysely<Tables>) => {
-  const getAll = async (params?: SearchBookmark): Promise<Bookmark[]> => {
+export default class BookmarkAPI {
+  public static async getAll (params?: SearchBookmark): Promise<Bookmark[]> {
     // ブックマークを取得する
-    const bookmarks = await db.selectFrom('bookmarks')
+    const bookmarks = await Database.getDB()
+      .selectFrom('bookmarks')
       .selectAll()
       .if(Boolean(params?.perPage), qb => qb.limit(params.perPage))
       .if(Boolean(params?.page), qb => qb.offset(params.page))
@@ -20,9 +20,10 @@ export const useBookmarkAPI = (db: Kysely<Tables>) => {
     return bookmarks.map(bookmark => ({ ...bookmark }))
   }
 
-  const get = async (bookmarkId: number): Promise<Bookmark> => {
+  public static async get (bookmarkId: number): Promise<Bookmark> {
     // ブックマークを取得する
-    const bookmark = await db.selectFrom('bookmarks')
+    const bookmark = await Database.getDB()
+      .selectFrom('bookmarks')
       .selectAll()
       .where('id', '=', bookmarkId)
       .executeTakeFirstOrThrow()
@@ -30,9 +31,10 @@ export const useBookmarkAPI = (db: Kysely<Tables>) => {
     return { ...bookmark }
   }
 
-  const create = async (form: FormBookmark): Promise<Bookmark> => {
+  public static async create (form: FormBookmark): Promise<Bookmark> {
     // ブックマークを作成する
-    const { insertId } = await db.insertInto('bookmarks')
+    const { insertId } = await Database.getDB()
+      .insertInto('bookmarks')
       .values({
         text: form.text,
         color: form.color || null,
@@ -42,12 +44,13 @@ export const useBookmarkAPI = (db: Kysely<Tables>) => {
       })
       .executeTakeFirst()
 
-    return get(Number(insertId))
+    return await this.get(Number(insertId))
   }
 
-  const update = async (bookmarkId: number, form: FormBookmark): Promise<Bookmark> => {
+  public static async update (bookmarkId: number, form: FormBookmark): Promise<Bookmark> {
     // ブックマークを更新する
-    const { numUpdatedRows } = await db.updateTable('bookmarks')
+    const { numUpdatedRows } = await Database.getDB()
+      .updateTable('bookmarks')
       .set({
         text: form.text,
         color: form.color || null,
@@ -61,12 +64,13 @@ export const useBookmarkAPI = (db: Kysely<Tables>) => {
       throw new Error('no result')
     }
 
-    return get(bookmarkId)
+    return await this.get(bookmarkId)
   }
 
-  const remove = async (bookmarkId: number): Promise<boolean> => {
+  public static async remove (bookmarkId: number): Promise<boolean> {
     // ブックマークを削除する
-    const { numDeletedRows } = await db.deleteFrom('bookmarks')
+    const { numDeletedRows } = await Database.getDB()
+      .deleteFrom('bookmarks')
       .where('id', '=', bookmarkId)
       .executeTakeFirst()
 
@@ -77,20 +81,12 @@ export const useBookmarkAPI = (db: Kysely<Tables>) => {
     return true
   }
 
-  const clear = async (): Promise<number> => {
+  public static async clear (): Promise<number> {
     // ブックマークを削除する
-    const { numDeletedRows } = await db.deleteFrom('bookmarks')
+    const { numDeletedRows } = await Database.getDB()
+      .deleteFrom('bookmarks')
       .executeTakeFirst()
 
     return Number(numDeletedRows)
-  }
-
-  return {
-    getAll,
-    get,
-    create,
-    update,
-    remove,
-    clear,
   }
 }

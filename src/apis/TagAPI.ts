@@ -1,5 +1,4 @@
-import { Kysely } from 'kysely'
-import { Tables } from '~~/src/databases/Database'
+import { Database } from '~~/src/databases/Database'
 import { Nullable, SearchModel, SystemColumns } from '~~/src/databases/DBUtil'
 import { Tag } from '~~/src/databases/models/Tag'
 
@@ -9,10 +8,11 @@ export type SeatchTag = SearchModel<Tag> & {
 }
 export type FormTag = Nullable<Omit<Tag, SystemColumns | 'path'>, 'is_pinned' | 'priority'>
 
-export const useTagAPI = (db: Kysely<Tables>) => {
-  const getAll = async (params?: SeatchTag): Promise<Tag[]> => {
+export default class TagAPI {
+  public static async getAll (params?: SeatchTag): Promise<Tag[]> {
     // タグ配列を取得する
-    const tags = await db.selectFrom('tags')
+    const tags = await Database.getDB()
+      .selectFrom('tags')
       .selectAll()
       .if(Boolean(params?.noGroup), qb => qb.where('tag_group_id', 'is', null))
       .if(Boolean(params?.tagGroupId), qb => qb.where('tag_group_id', '=', params.tagGroupId))
@@ -25,9 +25,10 @@ export const useTagAPI = (db: Kysely<Tables>) => {
     return tags.map(tag => ({ ...tag }))
   }
 
-  const get = async (tagId: number): Promise<Tag> => {
+  public static async get (tagId: number): Promise<Tag> {
     // タグを取得する
-    const tag = await db.selectFrom('tags')
+    const tag = await Database.getDB()
+      .selectFrom('tags')
       .selectAll()
       .where('id', '=', tagId)
       .executeTakeFirstOrThrow()
@@ -35,9 +36,10 @@ export const useTagAPI = (db: Kysely<Tables>) => {
     return { ...tag }
   }
 
-  const getByName = async (tagName: string): Promise<Tag> => {
+  public static async getByName (tagName: string): Promise<Tag> {
     // タグを取得する
-    const tag = await db.selectFrom('tags')
+    const tag = await Database.getDB()
+      .selectFrom('tags')
       .selectAll()
       .where('name', '=', tagName)
       .executeTakeFirst()
@@ -45,9 +47,10 @@ export const useTagAPI = (db: Kysely<Tables>) => {
     return { ...tag }
   }
 
-  const create = async (form: FormTag): Promise<Tag> => {
+  public static async create (form: FormTag): Promise<Tag> {
     // タグを作成する
-    const { insertId } = await db.insertInto('tags')
+    const { insertId } = await Database.getDB()
+      .insertInto('tags')
       .values({
         name: form.name,
         color: form.color || null,
@@ -59,12 +62,13 @@ export const useTagAPI = (db: Kysely<Tables>) => {
       })
       .executeTakeFirst()
 
-    return get(Number(insertId))
+    return await this.get(Number(insertId))
   }
 
-  const update = async (tagId: number, form: FormTag): Promise<Tag> => {
+  public static async update (tagId: number, form: FormTag): Promise<Tag> {
     // タグを更新する
-    const { numUpdatedRows } = await db.updateTable('tags')
+    const { numUpdatedRows } = await Database.getDB()
+      .updateTable('tags')
       .set({
         name: form.name,
         color: form.color || null,
@@ -80,12 +84,13 @@ export const useTagAPI = (db: Kysely<Tables>) => {
       throw new Error('no result')
     }
 
-    return get(tagId)
+    return await this.get(tagId)
   }
 
-  const updateGroup = async (tagId: number, tagGroupId?: number, priority?: number): Promise<Tag> => {
+  public static async updateGroup (tagId: number, tagGroupId?: number, priority?: number): Promise<Tag> {
     // タグのグループのみを更新する
-    const { numUpdatedRows } = await db.updateTable('tags')
+    const { numUpdatedRows } = await Database.getDB()
+      .updateTable('tags')
       .set({
         tag_group_id: tagGroupId || null,
         priority: priority ?? 0,
@@ -97,43 +102,36 @@ export const useTagAPI = (db: Kysely<Tables>) => {
       throw new Error('no result')
     }
 
-    return get(tagId)
+    return await this.get(tagId)
   }
 
-  const remove = async (tagId: number): Promise<boolean> => {
+  public static async remove (tagId: number): Promise<boolean> {
     // 関連する reportTag を消す
-    await db.deleteFrom('report_tags')
+    await Database.getDB()
+      .deleteFrom('report_tags')
       .where('tag_id', '=', tagId)
       .executeTakeFirst()
 
     // タグを削除する
-    const { numDeletedRows } = await db.deleteFrom('tags')
+    const { numDeletedRows } = await Database.getDB()
+      .deleteFrom('tags')
       .where('id', '=', tagId)
       .executeTakeFirst()
 
     return Number(numDeletedRows) > 0
   }
 
-  const clear = async (): Promise<number> => {
+  public static async clear (): Promise<number> {
     // 関連する reportTag を消す
-    await db.deleteFrom('report_tags')
+    await Database.getDB()
+      .deleteFrom('report_tags')
       .executeTakeFirst()
 
     // タグを削除する
-    const { numDeletedRows } = await db.deleteFrom('tags')
+    const { numDeletedRows } = await Database.getDB()
+      .deleteFrom('tags')
       .executeTakeFirst()
 
     return Number(numDeletedRows)
-  }
-
-  return {
-    getAll,
-    get,
-    getByName,
-    create,
-    update,
-    updateGroup,
-    remove,
-    clear,
   }
 }
