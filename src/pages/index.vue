@@ -1,12 +1,11 @@
 <template>
   <div>
-    <TagTree :tag-tree-action="tagTreeAction" @select:tag="onSelectedTag" />
+    <TagTree @select:tag="onSelectedTag" />
 
     <Card class="m-2">
       <template #content>
         <ReportEditBox
           disable-close
-          :tag-tree-action="tagTreeAction"
           @reload="onRefresh"
         />
       </template>
@@ -16,7 +15,6 @@
       v-for="report of reports"
       :key="report.id"
       :report="report"
-      :tag-tree-action="tagTreeAction"
       @reload="onRefresh"
     />
 
@@ -25,17 +23,13 @@
 </template>
 
 <script setup lang="ts">
-import { useReportAPI } from '~~/src/apis/useReportAPI'
-import { useTagTreeAction } from '~~/src/composables/reports/useTagTreeAction'
-import { Database } from '~~/src/databases/Database'
+import { ReportAPI } from '~~/src/apis/ReportAPI'
 import { ReportWithTag } from '~~/src/databases/models/Report'
 import { Tag } from '~~/src/databases/models/Tag'
+import { useTagStore } from '~~/src/store/useTagStore'
 
-const { db } = Database.getInstance()
-const reportAPI = useReportAPI(db)
+const tagStore = useTagStore()
 const toast = useToast()
-
-const tagTreeAction = useTagTreeAction(db, toast)
 
 const reports = ref<ReportWithTag[]>([])
 
@@ -45,11 +39,11 @@ const onSelectedTag = (tag?: Tag) => {
 
 const onRefresh = async () => {
   try {
-    reports.value = await reportAPI.getAll({
+    reports.value = await ReportAPI.getAll({
       sort: ['id', 'desc'],
     })
 
-    await tagTreeAction.onInit()
+    await tagStore.init()
   } catch (err) {
     toast.catchError(err)
   }

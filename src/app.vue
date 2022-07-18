@@ -12,14 +12,20 @@
 </template>
 
 <script setup lang="ts">
+import { useTagStore } from '~~/src/store/useTagStore'
 import { Database } from '~~/src/databases/Database'
+
 Database.debug = process.dev
 
 const key = ref<number>(Date.now())
-
 const onReload = () => {
   key.value = Date.now()
 }
+
+const tagStore = useTagStore()
+onMounted(() => {
+  tagStore.init()
+})
 </script>
 
 <style scoped>

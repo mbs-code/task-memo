@@ -27,7 +27,7 @@
           </div>
 
           <ReportTagInput
-            :tags="tagTreeAction.tags.value"
+            :tags="tagStore.tags"
             @add:tag="onAddTag"
           />
         </div>
@@ -68,18 +68,16 @@
     v-model:visible="showTagEditDialog"
     :selected-tags="formSelectedTags"
     :input-tag-names="formInputTagNames"
-    :tag-tree-action="tagTreeAction"
     @add:tag="onAddTag"
     @remove:tag="onRemoveTag"
   />
 </template>
 
 <script setup lang="ts">
-import { FormReport, useReportAPI } from '~~/src/apis/useReportAPI'
-import { Database } from '~~/src/databases/Database'
 import { ReportWithTag } from '~~/src/databases/models/Report'
-import { useTagTreeAction } from '~~/src/composables/reports/useTagTreeAction'
 import { Tag } from '~~/src/databases/models/Tag'
+import { FormReport, ReportAPI } from '~~/src/apis/ReportAPI'
+import { useTagStore } from '~~/src/store/useTagStore'
 
 type Emit = {
   (e: 'reload'): void
@@ -88,15 +86,11 @@ type Emit = {
 const emit = defineEmits<Emit>()
 const props = defineProps<{
   report?: ReportWithTag,
-  tagTreeAction: ReturnType<typeof useTagTreeAction>,
   disableClose?: boolean,
 }>()
 
-const { db } = Database.getInstance()
-const reportAPI = useReportAPI(db)
+const tagStore = useTagStore()
 const toast = useToast()
-
-const tags = computed(() => props.tagTreeAction.tags.value)
 
 const form = reactive<FormReport>({
   text: '',
@@ -136,8 +130,8 @@ const onSave = async () => {
 
     const reportId = props.report?.id
     const res = reportId
-      ? await reportAPI.update(reportId, data)
-      : await reportAPI.create(data)
+      ? await ReportAPI.update(reportId, data)
+      : await ReportAPI.create(data)
 
     const actStr = reportId ? '更新' : '作成'
     toast.success(`レポートを${actStr}しました。 id=${res.id}`)
@@ -171,7 +165,7 @@ watch(() => props.report, () => {
 
 const onAddTag = (name: string) => {
   // タグにあるか判断
-  const tag = tags.value.find(t => t.name === name)
+  const tag = tagStore.tags.find(t => t.name === name)
   if (tag) {
     // タグにあれば、既に存在していないことを確認して追加
     const exist = formSelectedTags.value.find(t => t.id === tag.id)

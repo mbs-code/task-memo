@@ -1,16 +1,10 @@
 /* eslint-disable @typescript-eslint/no-unused-vars */
 
-import { Kysely } from 'kysely'
-import { useReportAPI } from '~~/src/apis/useReportAPI'
-import { useTagAPI } from '~~/src/apis/useTagAPI'
-import { useTagGroupAPI } from '~~/src/apis/useTagGroupAPI'
-import { Tables } from '~~/src/databases/Database'
+import { ReportAPI } from '~~/src/apis/ReportAPI'
+import TagAPI from '~~/src/apis/TagAPI'
+import TagGroupAPI from '~~/src/apis/TagGroupAPI'
 
-export const useTestSeeder = (db: Kysely<Tables>) => {
-  const reportAPI = useReportAPI(db)
-  const tagAPI = useTagAPI(db)
-  const tagGroupAPI = useTagGroupAPI(db)
-
+export const useTestSeeder = () => {
   const seed = async () => {
     /**
      * TAG:
@@ -27,55 +21,55 @@ export const useTestSeeder = (db: Kysely<Tables>) => {
      * - FFF
      */
 
-    const groupA = await tagGroupAPI.create({
+    const groupA = await TagGroupAPI.create({
       name: 'GroupA',
       tag_group_id: null,
     })
-    const groupB = await tagGroupAPI.create({
+    const groupB = await TagGroupAPI.create({
       name: 'GroupB',
       tag_group_id: groupA.id,
     })
-    const groupC = await tagGroupAPI.create({
+    const groupC = await TagGroupAPI.create({
       name: 'GroupC',
       tag_group_id: groupB.id,
     })
-    const groupD = await tagGroupAPI.create({
+    const groupD = await TagGroupAPI.create({
       name: 'GroupD',
       tag_group_id: groupB.id,
     })
-    const groupE = await tagGroupAPI.create({
+    const groupE = await TagGroupAPI.create({
       name: 'GroupE',
       tag_group_id: null,
     })
 
-    const tagA = await tagAPI.create({
+    const tagA = await TagAPI.create({
       name: 'AAA',
       tag_group_id: groupA.id,
     })
-    const tagB = await tagAPI.create({
+    const tagB = await TagAPI.create({
       name: 'BBB',
       tag_group_id: groupD.id,
     })
-    const tagC = await tagAPI.create({
+    const tagC = await TagAPI.create({
       name: 'CCC',
       tag_group_id: groupD.id,
     })
-    const tagD = await tagAPI.create({
+    const tagD = await TagAPI.create({
       name: 'DDD',
       color: 'yellow',
       tag_group_id: groupE.id,
     })
-    const tagE = await tagAPI.create({
+    const tagE = await TagAPI.create({
       name: 'EEE',
       color: 'green',
       tag_group_id: groupE.id,
     })
-    const tagF = await tagAPI.create({
+    const tagF = await TagAPI.create({
       name: 'FFF',
       color: 'blue',
       tag_group_id: null,
     })
-    const tagG = await tagAPI.create({
+    const tagG = await TagAPI.create({
       name: 'GGG',
       color: 'red',
       tag_group_id: null,
@@ -83,22 +77,22 @@ export const useTestSeeder = (db: Kysely<Tables>) => {
 
     ///
 
-    const reportA = await reportAPI.create({
+    const reportA = await ReportAPI.create({
       text: 'テストレポート\nあいうえおかきくけこ\nさしすせそたちつてと',
       tagNames: ['BBB', 'DDD'],
     })
 
-    const reportB = await reportAPI.create({
+    const reportB = await ReportAPI.create({
       text: 'なにぬねの\n\n- abcde\n- fghij',
       tagNames: ['DDD', 'EEE'],
     })
 
-    const reportC = await reportAPI.create({
+    const reportC = await ReportAPI.create({
       text: 'タグなしレポート\n\n- テスト1\n- テスト2',
       tagNames: [],
     })
 
-    const reportD = await reportAPI.create({
+    const reportD = await ReportAPI.create({
       text: 'タイトルのみ',
       tagNames: [],
     })

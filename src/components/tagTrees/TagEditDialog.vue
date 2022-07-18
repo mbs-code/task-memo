@@ -47,8 +47,7 @@
 
 <script setup lang="ts">
 import { useConfirm } from 'primevue/useconfirm'
-import { FormTag, useTagAPI } from '~~/src/apis/useTagAPI'
-import { Database } from '~~/src/databases/Database'
+import TagAPI, { FormTag } from '~~/src/apis/TagAPI'
 import { Tag } from '~~/src/databases/models/Tag'
 import { TagGroup } from '~~/src/databases/models/TagGroup'
 
@@ -64,8 +63,6 @@ const emit = defineEmits<{ // eslint-disable-line func-call-spacing
   (e: 'delete:tag'): void,
 }>()
 
-const { db } = Database.getInstance()
-const tagAPI = useTagAPI(db)
 const toast = useToast()
 const confirm = useConfirm()
 
@@ -105,8 +102,8 @@ const onSave = async () => {
 
     const tagId = props.tag?.id
     const newTag = tagId
-      ? await tagAPI.update(tagId, data)
-      : await tagAPI.create(data)
+      ? await TagAPI.update(tagId, data)
+      : await TagAPI.create(data)
 
     const actStr = tagId ? '更新' : '作成'
     toast.success(`タグを${actStr}しました。 id=${newTag.id}`)
@@ -123,7 +120,7 @@ const onDelete = () => {
     message: '消すぞ',
     accept: async () => {
       if (props.tag?.id) {
-        await tagAPI.remove(props.tag.id)
+        await TagAPI.remove(props.tag.id)
         emit('delete:tag')
         onClose()
       }

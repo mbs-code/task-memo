@@ -1,9 +1,7 @@
 <template>
   <TagTreeRender
-    :tag-tree="tagTreeAction.tagTree.value"
+    :tag-tree="tagStore.tagTree"
     :disabled="!isEdit"
-    @delete:group="onDeleteGroup"
-    @delete:tag="onDeleteTag"
   >
     <template #header>
       <InputSwitch v-model="isEdit" />
@@ -15,47 +13,41 @@
     v-model:visible="showTagGroupEditDialog"
     :tag-group="selectedTagGroup"
     :parent-tag-group="selectedParentTagGroup"
-    @update:tag-group="tagTreeAction.onInit()"
-    @delete:tag-group="tagTreeAction.onInit()"
+    @update:tag-group="tagStore.init()"
+    @delete:tag-group="tagStore.init()"
   />
 
   <TagEditDialog
     v-model:visible="showTagEditDialog"
     :tag="selectedTag"
     :parent-tag-group="selectedParentTagGroup"
-    @update:tag="tagTreeAction.onInit()"
-    @delete:tag="tagTreeAction.onInit()"
+    @update:tag="tagStore.init()"
+    @delete:tag="tagStore.init()"
   />
 </template>
 
 <script lang="ts">
 import { InjectionKey } from 'vue'
-import { useTagAPI } from '~~/src/apis/useTagAPI'
-import { useTagGroupAPI } from '~~/src/apis/useTagGroupAPI'
-import { TagTreeActionType, useTagTreeAction } from '~~/src/composables/reports/useTagTreeAction'
-import { Database } from '~~/src/databases/Database'
+import TagAPI from '~~/src/apis/TagAPI'
+import TagGroupAPI from '~~/src/apis/TagGroupAPI'
 import { Tag } from '~~/src/databases/models/Tag'
 import { TagGroup } from '~~/src/databases/models/TagGroup'
+import { useTagStore } from '~~/src/store/useTagStore'
 
-export const tagTreeActionKey: InjectionKey<Readonly<TagTreeActionType>> = Symbol('tagTreeAction')
-export const onTagGroupClickKey: InjectionKey<(tagGroup?: TagGroup, parentTagGroup?: TagGroup) => void> = Symbol('onTagGroupClickKey')
-export const onTagClickKey: InjectionKey<(tag?: Tag, parentTagGroup?: TagGroup) => void> = Symbol('onTagClickKey')
+export const onClickTagGroupKey: InjectionKey<(tagGroup?: TagGroup, parentTagGroup?: TagGroup) => void> = Symbol('onClickTagGroupKey')
+export const onClickTagKey: InjectionKey<(tag?: Tag, parentTagGroup?: TagGroup) => void> = Symbol('onClickTagKey')
+export const onUpdateTagGroupKey: InjectionKey<(tagGroupId: number, targetGroup: TagGroup, insertIndex: number) => void> = Symbol('onUpdateTagGroupKey')
+export const onUpdateTagKey: InjectionKey<(tagId: number, targetGroup: TagGroup, insertIndex: number) => void> = Symbol('onUpdateTagKey')
 </script>
 
 <script setup lang="ts">
-const props = defineProps<{
-  tagTreeAction: ReturnType<typeof useTagTreeAction>,
-}>()
 const emit = defineEmits<{ // eslint-disable-line func-call-spacing
   (e: 'update'): void,
   (e: 'select:tag', tag: Tag): void,
 }>()
 
+const tagStore = useTagStore()
 const isEdit = ref<boolean>(false)
-
-const { db } = Database.getInstance()
-const tagAPI = useTagAPI(db)
-const tagGroupAPI = useTagGroupAPI(db)
 
 const showTagGroupEditDialog = ref<boolean>(false)
 const showTagEditDialog = ref<boolean>(false)
@@ -64,7 +56,7 @@ const selectedParentTagGroup = ref<TagGroup>() // 親要素
 const selectedTagGroup = ref<TagGroup>()
 const selectedTag = ref<Tag>()
 
-const onTagGroupClick = (tagGroup?: TagGroup, parentTagGroup?: TagGroup) => {
+const onClickTagGroup = (tagGroup?: TagGroup, parentTagGroup?: TagGroup) => {
   if (isEdit.value) {
     selectedTagGroup.value = tagGroup
     selectedParentTagGroup.value = parentTagGroup
@@ -72,7 +64,7 @@ const onTagGroupClick = (tagGroup?: TagGroup, parentTagGroup?: TagGroup) => {
   }
 }
 
-const onTagClick = (tag?: Tag, parentTagGroup?: TagGroup) => {
+const onClickTag = (tag?: Tag, parentTagGroup?: TagGroup) => {
   if (isEdit.value) {
     selectedTag.value = tag
     selectedParentTagGroup.value = parentTagGroup
@@ -82,17 +74,56 @@ const onTagClick = (tag?: Tag, parentTagGroup?: TagGroup) => {
   }
 }
 
-provide(tagTreeActionKey, props.tagTreeAction)
-provide(onTagGroupClickKey, onTagGroupClick)
-provide(onTagClickKey, onTagClick)
+const onUpdateTagGroup = async (tagGroupId: number, targetGroup: TagGroup, insertIndex: number) => {
+  // group を取りに行く
+  const group = tagStore.tagGroups.find(g => g.id === tagGroupId)
+  if (!group) { throw new Error('TagGroup ID が存在しません。 id=' + tagGroupId) }
 
-const onDeleteGroup = async (groupId: number) => {
-  await tagGroupAPI.remove(groupId)
-  emit('update')
+  // 同じ親を持つ group を取得する
+  const siblings = await TagGroupAPI.getAll({
+    noGroup: !targetGroup.id,
+    tagGroupId: targetGroup.id,
+    sorts: [['priority', 'asc'], ['id', 'asc']]
+  })
+
+  // 配列に突っ込む
+  const sorts = siblings.filter(g => g.id !== group.id) // 自身は取り除く
+  sorts.splice(insertIndex, 0, group) // 挿入
+
+  for (const key in sorts) {
+    const sort = sorts[key]
+    await TagGroupAPI.updateGroup(sort.id, targetGroup.id, Number(key))
+  }
+
+  tagStore.init()
 }
 
-const onDeleteTag = async (tagId: number) => {
-  await tagAPI.remove(tagId)
-  emit('update')
+const onUpdateTag = async (tagId: number, targetGroup: TagGroup, insertIndex: number) => {
+  // tag を取りに行く
+  const tag = await TagAPI.get(tagId)
+
+  // 同じ親を持つ tag を取得する
+  const siblings = await TagAPI.getAll({
+    noGroup: !targetGroup.id,
+    tagGroupId: targetGroup.id,
+    sorts: [['priority', 'asc'], ['id', 'asc']]
+  })
+
+  // 配列に突っ込む
+  const sorts = siblings.filter(t => t.id !== tag.id) // 自身は取り除く
+  sorts.splice(insertIndex, 0, tag) // 挿入
+
+  for (const key in sorts) {
+    const sort = sorts[key]
+    await TagAPI.updateGroup(sort.id, targetGroup.id, Number(key))
+  }
+
+  // 更新する
+  tagStore.init()
 }
+
+provide(onClickTagGroupKey, onClickTagGroup)
+provide(onClickTagKey, onClickTag)
+provide(onUpdateTagGroupKey, onUpdateTagGroup)
+provide(onUpdateTagKey, onUpdateTag)
 </script>

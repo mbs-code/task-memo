@@ -64,6 +64,11 @@ export class Database {
     }
   }
 
+  static getDB () {
+    const { db } = this.getInstance()
+    return db
+  }
+
   static async destroy () {
     const db = this.#instance
     if (db) {

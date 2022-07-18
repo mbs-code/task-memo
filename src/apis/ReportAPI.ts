@@ -1,18 +1,16 @@
-import { Kysely } from 'kysely'
-import { useTagAPI } from '~~/src/apis/useTagAPI'
-import { Tables } from '~~/src/databases/Database'
+import TagAPI from '~~/src/apis/TagAPI'
+import { Database } from '~~/src/databases/Database'
 import { SearchModel, SystemColumns } from '~~/src/databases/DBUtil'
 import { Report, ReportWithTag } from '~~/src/databases/models/Report'
 
 export type SearchReport = SearchModel<Report>
 export type FormReport = Omit<Report, SystemColumns> & { tagNames: string[] }
 
-export const useReportAPI = (db: Kysely<Tables>) => {
-  const tagAPI = useTagAPI(db)
-
-  const getAll = async (params?: SearchReport): Promise<ReportWithTag[]> => {
+export class ReportAPI {
+  public static async getAll (params?: SearchReport): Promise<ReportWithTag[]> {
     // レポートを取得する
-    const reports = await db.selectFrom('reports')
+    const reports = await Database.getDB()
+      .selectFrom('reports')
       .selectAll()
       .if(Boolean(params?.perPage), qb => qb.limit(params.perPage))
       .if(Boolean(params?.page), qb => qb.offset(params.page))
@@ -22,14 +20,16 @@ export const useReportAPI = (db: Kysely<Tables>) => {
 
     // レポートに紐づく中間テーブルを取得
     const reportIds = Array.from(new Set(reports.map(r => r.id)))
-    const reportTags = await db.selectFrom('report_tags')
+    const reportTags = await Database.getDB()
+      .selectFrom('report_tags')
       .selectAll()
       .where('report_id', 'in', reportIds)
       .execute()
 
     // 中間テーブルに紐づくタグを取得
     const tagIds = Array.from(new Set(reportTags.map(rt => rt.tag_id)))
-    const tags = await db.selectFrom('tags')
+    const tags = await Database.getDB()
+      .selectFrom('tags')
       .selectAll()
       .where('id', 'in', tagIds)
       .execute()
@@ -50,22 +50,25 @@ export const useReportAPI = (db: Kysely<Tables>) => {
     return reportWithTags
   }
 
-  const get = async (reportId: number): Promise<ReportWithTag> => {
+  public static async get (reportId: number): Promise<ReportWithTag> {
     // レポートを取得する
-    const report = await db.selectFrom('reports')
+    const report = await Database.getDB()
+      .selectFrom('reports')
       .selectAll()
       .where('id', '=', reportId)
       .executeTakeFirstOrThrow()
 
     // レポートに紐づく中間テーブルを取得
-    const reportTags = await db.selectFrom('report_tags')
+    const reportTags = await Database.getDB()
+      .selectFrom('report_tags')
       .selectAll()
       .where('report_id', '=', report.id)
       .execute()
 
     // 中間テーブルに紐づくタグを取得
     const tagIds = Array.from(new Set(reportTags.map(rt => rt.tag_id)))
-    const tags = await db.selectFrom('tags')
+    const tags = await Database.getDB()
+      .selectFrom('tags')
       .selectAll()
       .where('id', 'in', tagIds)
       .execute()
@@ -81,9 +84,10 @@ export const useReportAPI = (db: Kysely<Tables>) => {
     return reportWithTag
   }
 
-  const create = async (form: FormReport): Promise<ReportWithTag> => {
+  public static async create (form: FormReport): Promise<ReportWithTag> {
     // レポートを作成する
-    const { insertId } = await db.insertInto('reports')
+    const { insertId } = await Database.getDB()
+      .insertInto('reports')
       .values({
         text: form.text,
         created_at: new Date(),
@@ -93,14 +97,15 @@ export const useReportAPI = (db: Kysely<Tables>) => {
     const reportId = Number(insertId)
 
     // タグを同期する
-    await _syncTagNames(reportId, form.tagNames)
+    await this._syncTagNames(reportId, form.tagNames)
 
-    return get(reportId)
+    return await this.get(reportId)
   }
 
-  const update = async (reportId: number, form: FormReport): Promise<ReportWithTag> => {
+  public static async update (reportId: number, form: FormReport): Promise<ReportWithTag> {
     // レポートを更新する
-    const { numUpdatedRows } = await db.updateTable('reports')
+    const { numUpdatedRows } = await Database.getDB()
+      .updateTable('reports')
       .set({
         text: form.text,
         updated_at: new Date(),
@@ -113,19 +118,21 @@ export const useReportAPI = (db: Kysely<Tables>) => {
     }
 
     // タグを同期する
-    await _syncTagNames(reportId, form.tagNames)
+    await this._syncTagNames(reportId, form.tagNames)
 
-    return get(reportId)
+    return await this.get(reportId)
   }
 
-  const remove = async (reportId: number): Promise<boolean> => {
+  public static async remove (reportId: number): Promise<boolean> {
     // 関連する reportTag を消す
-    await db.deleteFrom('report_tags')
+    await Database.getDB()
+      .deleteFrom('report_tags')
       .where('report_id', '=', reportId)
       .executeTakeFirst()
 
     // レポートを削除する
-    const { numDeletedRows } = await db.deleteFrom('reports')
+    const { numDeletedRows } = await Database.getDB()
+      .deleteFrom('reports')
       .where('id', '=', reportId)
       .executeTakeFirst()
 
@@ -136,13 +143,15 @@ export const useReportAPI = (db: Kysely<Tables>) => {
     return true
   }
 
-  const clear = async (): Promise<number> => {
+  public static async clear (): Promise<number> {
     // 関連する reportTag を消す
-    await db.deleteFrom('report_tags')
+    await Database.getDB()
+      .deleteFrom('report_tags')
       .executeTakeFirst()
 
     // レポートを削除する
-    const { numDeletedRows } = await db.deleteFrom('reports')
+    const { numDeletedRows } = await Database.getDB()
+      .deleteFrom('reports')
       .executeTakeFirst()
 
     return Number(numDeletedRows)
@@ -156,9 +165,10 @@ export const useReportAPI = (db: Kysely<Tables>) => {
    * @param {string[]} tagNames タグ名
    * @return {Promise<void>}
    */
-  const _syncTagNames = async (reportId: number, tagNames: string[]): Promise<void> => {
+  protected static async _syncTagNames (reportId: number, tagNames: string[]): Promise<void> {
     // レポートに紐づく中間テーブル（＋タグ名）を取得
-    const reportTags = await db.selectFrom('report_tags')
+    const reportTags = await Database.getDB()
+      .selectFrom('report_tags')
       .selectAll('report_tags')
       .where('report_id', '=', reportId)
       .leftJoin('tags', 'tags.id', 'report_tags.tag_id')
@@ -170,12 +180,12 @@ export const useReportAPI = (db: Kysely<Tables>) => {
       const exist = reportTags.find(rt => rt.tag_name === tagName)
       if (!exist) {
         // tag を取得する
-        const tag = await tagAPI.getByName(tagName)
+        const tag = await TagAPI.getByName(tagName)
 
         // タグが無ければ新規に作成する
         let tagId = tag?.id
         if (!tagId) {
-          const newTag = await tagAPI.create({
+          const newTag = await TagAPI.create({
             name: tagName,
           })
 
@@ -183,7 +193,8 @@ export const useReportAPI = (db: Kysely<Tables>) => {
         }
 
         // reportTag を新規に作成する
-        await db.insertInto('report_tags')
+        await Database.getDB()
+          .insertInto('report_tags')
           .values({
             report_id: reportId,
             tag_id: tagId,
@@ -199,19 +210,11 @@ export const useReportAPI = (db: Kysely<Tables>) => {
       const exist = tagNames.find(n => n === reportTag.tag_name)
       if (!exist) {
         // reportTag を削除する
-        await db.deleteFrom('report_tags')
+        await Database.getDB()
+          .deleteFrom('report_tags')
           .where('id', '=', reportTag.id)
           .executeTakeFirst()
       }
     }
-  }
-
-  return {
-    getAll,
-    get,
-    create,
-    update,
-    remove,
-    clear,
   }
 }
