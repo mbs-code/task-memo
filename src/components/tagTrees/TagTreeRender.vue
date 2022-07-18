@@ -131,9 +131,9 @@
 <script setup lang="ts">
 import fontColorContrast from 'font-color-contrast'
 import { onClickTagKey, onClickTagGroupKey, onUpdateTagGroupKey, onUpdateTagKey } from '~~/src/components/tagTrees/TagTree.vue'
-import { TagTreeItem } from '~~/src/composables/reports/useTagTreeAction'
 import { Tag } from '~~/src/databases/models/Tag'
 import { TagGroup } from '~~/src/databases/models/TagGroup'
+import { TagTreeItem } from '~~/src/store/useTagStore'
 
 const props = withDefaults(defineProps<{
   tagTree: TagTreeItem,
