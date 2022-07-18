@@ -19,21 +19,21 @@
         icon="pi pi-folder"
         :label="tagTree.name"
         :disabled="disabled"
-        @click="!isRoot && onTagGroupClick(tagTree, tagTree)"
+        @click="!isRoot && onClickTagGroup(tagTree, tagTree)"
       />
 
       <Button
         v-if="!disabled"
         class="report-tag-button p-button-text p-button-success"
         icon="pi pi-folder"
-        @click="onTagGroupClick(null, tagTree)"
+        @click="onClickTagGroup(null, tagTree)"
       />
 
       <Button
         v-if="!disabled"
         class="report-tag-button p-button-text p-button-success"
         icon="pi pi-tag"
-        @click="onTagClick(null, tagTree)"
+        @click="onClickTag(null, tagTree)"
       />
 
       <div class="flex-grow-1" />
@@ -79,7 +79,7 @@
                 @drop.stop
                 @dragstart.stop="tagStart($event, tag)"
                 @dragend.stop="dragEnd"
-                @click="onTagClick(tag, tagTree)"
+                @click="onClickTag(tag, tagTree)"
               />
             </div>
           </template>
@@ -130,7 +130,7 @@
 
 <script setup lang="ts">
 import fontColorContrast from 'font-color-contrast'
-import { onTagClickKey, onTagGroupClickKey, tagTreeActionKey } from '~~/src/components/tagTrees/TagTree.vue'
+import { onClickTagKey, onClickTagGroupKey, onUpdateTagGroupKey, onUpdateTagKey } from '~~/src/components/tagTrees/TagTree.vue'
 import { TagTreeItem } from '~~/src/composables/reports/useTagTreeAction'
 import { Tag } from '~~/src/databases/models/Tag'
 import { TagGroup } from '~~/src/databases/models/TagGroup'
@@ -148,9 +148,10 @@ const emit = defineEmits<{ // eslint-disable-line func-call-spacing
   (e: 'delete:tag', id: number): void,
 }>()
 
-const tagTreeAction = inject(tagTreeActionKey)
-const onTagGroupClick = inject(onTagGroupClickKey)
-const onTagClick = inject(onTagClickKey)
+const onClickTagGroup = inject(onClickTagGroupKey)
+const onClickTag = inject(onClickTagKey)
+const onUpdateTagGroup = inject(onUpdateTagGroupKey)
+const onUpdateTag = inject(onUpdateTagKey)
 
 ///
 
@@ -193,13 +194,13 @@ const onDrop = (event: DragEvent, insertGroupIndex: number, insertTagIndex: numb
   const groupId = event.dataTransfer.getData('group-id') ?? null
 
   if (tagId) {
-    tagTreeAction.onUpdateTag(Number(tagId), props.tagTree, insertTagIndex)
+    onUpdateTag(Number(tagId), props.tagTree, insertTagIndex)
   }
 
   // 無効ではなく、自身で持っていない場合は drop 処理
   if (!(props.disabled || Boolean(draggedGroup.value) || Boolean(draggedTag.value))) {
     if (groupId) {
-      tagTreeAction.onUpdateGroup(Number(groupId), props.tagTree, insertGroupIndex)
+      onUpdateTagGroup(Number(groupId), props.tagTree, insertGroupIndex)
     }
   }
 

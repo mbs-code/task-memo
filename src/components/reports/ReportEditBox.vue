@@ -27,7 +27,7 @@
           </div>
 
           <ReportTagInput
-            :tags="tagTreeAction.tags.value"
+            :tags="tagStore.tags"
             @add:tag="onAddTag"
           />
         </div>
@@ -68,7 +68,6 @@
     v-model:visible="showTagEditDialog"
     :selected-tags="formSelectedTags"
     :input-tag-names="formInputTagNames"
-    :tag-tree-action="tagTreeAction"
     @add:tag="onAddTag"
     @remove:tag="onRemoveTag"
   />
@@ -76,9 +75,9 @@
 
 <script setup lang="ts">
 import { ReportWithTag } from '~~/src/databases/models/Report'
-import { useTagTreeAction } from '~~/src/composables/reports/useTagTreeAction'
 import { Tag } from '~~/src/databases/models/Tag'
 import { FormReport, ReportAPI } from '~~/src/apis/ReportAPI'
+import { useTagStore } from '~~/src/store/useTagStore'
 
 type Emit = {
   (e: 'reload'): void
@@ -87,12 +86,11 @@ type Emit = {
 const emit = defineEmits<Emit>()
 const props = defineProps<{
   report?: ReportWithTag,
-  tagTreeAction: ReturnType<typeof useTagTreeAction>,
   disableClose?: boolean,
 }>()
 
+const tagStore = useTagStore()
 const toast = useToast()
-const tags = computed(() => props.tagTreeAction.tags.value)
 
 const form = reactive<FormReport>({
   text: '',
@@ -167,7 +165,7 @@ watch(() => props.report, () => {
 
 const onAddTag = (name: string) => {
   // タグにあるか判断
-  const tag = tags.value.find(t => t.name === name)
+  const tag = tagStore.tags.find(t => t.name === name)
   if (tag) {
     // タグにあれば、既に存在していないことを確認して追加
     const exist = formSelectedTags.value.find(t => t.id === tag.id)

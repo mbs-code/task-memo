@@ -13,7 +13,7 @@
           </div>
 
           <ReportTagInput
-            :tags="tagTreeAction.tags.value"
+            :tags="tagStore.tags"
             @add:tag="onAddTag"
           />
         </div>
@@ -30,21 +30,20 @@
       </div>
 
       <div class="col md-6">
-        <TagTree :tag-tree-action="tagTreeAction" @select:tag="onSelectedTag" />
+        <TagTree @select:tag="onSelectedTag" />
       </div>
     </div>
   </Dialog>
 </template>
 
 <script setup lang="ts">
-import { useTagTreeAction } from '~~/src/composables/reports/useTagTreeAction'
 import { Tag } from '~~/src/databases/models/Tag'
+import { useTagStore } from '~~/src/store/useTagStore'
 
 const props = defineProps<{
   visible: boolean,
   selectedTags: Tag[],
   inputTagNames: string[],
-  tagTreeAction: ReturnType<typeof useTagTreeAction>,
 }>()
 const emit = defineEmits<{ // eslint-disable-line func-call-spacing
   (e: 'update:visible', value: boolean): void,
@@ -56,6 +55,8 @@ const _visible = computed({
   get: () => props.visible,
   set: (value: boolean) => emit('update:visible', value)
 })
+
+const tagStore = useTagStore()
 
 // const onClose = () => { _visible.value = false }
 
