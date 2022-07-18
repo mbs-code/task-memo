@@ -75,11 +75,10 @@
 </template>
 
 <script setup lang="ts">
-import { FormReport, useReportAPI } from '~~/src/apis/useReportAPI'
-import { Database } from '~~/src/databases/Database'
 import { ReportWithTag } from '~~/src/databases/models/Report'
 import { useTagTreeAction } from '~~/src/composables/reports/useTagTreeAction'
 import { Tag } from '~~/src/databases/models/Tag'
+import { FormReport, ReportAPI } from '~~/src/apis/ReportAPI'
 
 type Emit = {
   (e: 'reload'): void
@@ -92,10 +91,7 @@ const props = defineProps<{
   disableClose?: boolean,
 }>()
 
-const { db } = Database.getInstance()
-const reportAPI = useReportAPI(db)
 const toast = useToast()
-
 const tags = computed(() => props.tagTreeAction.tags.value)
 
 const form = reactive<FormReport>({
@@ -136,8 +132,8 @@ const onSave = async () => {
 
     const reportId = props.report?.id
     const res = reportId
-      ? await reportAPI.update(reportId, data)
-      : await reportAPI.create(data)
+      ? await ReportAPI.update(reportId, data)
+      : await ReportAPI.create(data)
 
     const actStr = reportId ? '更新' : '作成'
     toast.success(`レポートを${actStr}しました。 id=${res.id}`)

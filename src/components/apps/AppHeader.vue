@@ -28,8 +28,8 @@ type Emit = {
 }
 const emit = defineEmits<Emit>()
 
-const { db, migrator } = Database.getInstance()
-const testSeeder = useTestSeeder(db)
+const { migrator } = Database.getInstance()
+const testSeeder = useTestSeeder()
 const toast = useToast()
 
 const onResetDB = async () => {

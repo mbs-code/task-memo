@@ -1,7 +1,5 @@
-import { Kysely } from 'kysely'
-import { useTagAPI } from '~~/src/apis/useTagAPI'
-import { useTagGroupAPI } from '~~/src/apis/useTagGroupAPI'
-import { Tables } from '~~/src/databases/Database'
+import TagAPI from '~~/src/apis/TagAPI'
+import TagGroupAPI from '~~/src/apis/TagGroupAPI'
 import { Tag } from '~~/src/databases/models/Tag'
 import { TagGroup } from '~~/src/databases/models/TagGroup'
 
@@ -10,10 +8,7 @@ export type TagTreeItem = Tag & {
   tags: Tag[],
 }
 
-export const useTagTreeAction = (db: Kysely<Tables>, toast: ReturnType<typeof useToast>) => {
-  const tagAPI = useTagAPI(db)
-  const tagGroupAPI = useTagGroupAPI(db)
-
+export const useTagTreeAction = (toast: ReturnType<typeof useToast>) => {
   const tags = ref<Tag[]>([])
   const tagGroups = ref<TagGroup[]>([])
 
@@ -55,8 +50,8 @@ export const useTagTreeAction = (db: Kysely<Tables>, toast: ReturnType<typeof us
    */
   const onInit = async () => {
     try {
-      tags.value = await tagAPI.getAll({ sorts: [['priority', 'asc'], ['id', 'asc']] })
-      tagGroups.value = await tagGroupAPI.getAll({ sorts: [['priority', 'asc'], ['id', 'asc']] })
+      tags.value = await TagAPI.getAll({ sorts: [['priority', 'asc'], ['id', 'asc']] })
+      tagGroups.value = await TagGroupAPI.getAll({ sorts: [['priority', 'asc'], ['id', 'asc']] })
     } catch (err) {
       toast.catchError(err)
     }
@@ -68,7 +63,7 @@ export const useTagTreeAction = (db: Kysely<Tables>, toast: ReturnType<typeof us
     if (!group) { throw new Error('TagGroup ID が存在しません。 id=' + tagGroupId) }
 
     // 同じ親を持つ group を取得する
-    const siblings = await tagGroupAPI.getAll({
+    const siblings = await TagGroupAPI.getAll({
       noGroup: !targetGroup.id,
       tagGroupId: targetGroup.id,
       sorts: [['priority', 'asc'], ['id', 'asc']]
@@ -80,7 +75,7 @@ export const useTagTreeAction = (db: Kysely<Tables>, toast: ReturnType<typeof us
 
     for (const key in sorts) {
       const sort = sorts[key]
-      await tagGroupAPI.updateGroup(sort.id, targetGroup.id, Number(key))
+      await TagGroupAPI.updateGroup(sort.id, targetGroup.id, Number(key))
     }
 
     // 更新する
@@ -89,10 +84,10 @@ export const useTagTreeAction = (db: Kysely<Tables>, toast: ReturnType<typeof us
 
   const onUpdateTag = async (tagId: number, targetGroup: TagGroup | null, insertId: number) => {
     // tag を取りに行く
-    const tag = await tagAPI.get(tagId)
+    const tag = await TagAPI.get(tagId)
 
     // 同じ親を持つ tag を取得する
-    const siblings = await tagAPI.getAll({
+    const siblings = await TagAPI.getAll({
       noGroup: !targetGroup.id,
       tagGroupId: targetGroup.id,
       sorts: [['priority', 'asc'], ['id', 'asc']]
@@ -104,7 +99,7 @@ export const useTagTreeAction = (db: Kysely<Tables>, toast: ReturnType<typeof us
 
     for (const key in sorts) {
       const sort = sorts[key]
-      await tagAPI.updateGroup(sort.id, targetGroup.id, Number(key))
+      await TagAPI.updateGroup(sort.id, targetGroup.id, Number(key))
     }
 
     // 更新する

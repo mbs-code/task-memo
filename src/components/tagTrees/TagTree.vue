@@ -30,10 +30,9 @@
 
 <script lang="ts">
 import { InjectionKey } from 'vue'
-import { useTagAPI } from '~~/src/apis/useTagAPI'
-import { useTagGroupAPI } from '~~/src/apis/useTagGroupAPI'
+import TagAPI from '~~/src/apis/TagAPI'
+import TagGroupAPI from '~~/src/apis/TagGroupAPI'
 import { TagTreeActionType, useTagTreeAction } from '~~/src/composables/reports/useTagTreeAction'
-import { Database } from '~~/src/databases/Database'
 import { Tag } from '~~/src/databases/models/Tag'
 import { TagGroup } from '~~/src/databases/models/TagGroup'
 
@@ -52,10 +51,6 @@ const emit = defineEmits<{ // eslint-disable-line func-call-spacing
 }>()
 
 const isEdit = ref<boolean>(false)
-
-const { db } = Database.getInstance()
-const tagAPI = useTagAPI(db)
-const tagGroupAPI = useTagGroupAPI(db)
 
 const showTagGroupEditDialog = ref<boolean>(false)
 const showTagEditDialog = ref<boolean>(false)
@@ -87,12 +82,12 @@ provide(onTagGroupClickKey, onTagGroupClick)
 provide(onTagClickKey, onTagClick)
 
 const onDeleteGroup = async (groupId: number) => {
-  await tagGroupAPI.remove(groupId)
+  await TagGroupAPI.remove(groupId)
   emit('update')
 }
 
 const onDeleteTag = async (tagId: number) => {
-  await tagAPI.remove(tagId)
+  await TagAPI.remove(tagId)
   emit('update')
 }
 </script>

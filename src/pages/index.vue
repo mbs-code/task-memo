@@ -25,17 +25,13 @@
 </template>
 
 <script setup lang="ts">
-import { useReportAPI } from '~~/src/apis/useReportAPI'
+import { ReportAPI } from '~~/src/apis/ReportAPI'
 import { useTagTreeAction } from '~~/src/composables/reports/useTagTreeAction'
-import { Database } from '~~/src/databases/Database'
 import { ReportWithTag } from '~~/src/databases/models/Report'
 import { Tag } from '~~/src/databases/models/Tag'
 
-const { db } = Database.getInstance()
-const reportAPI = useReportAPI(db)
 const toast = useToast()
-
-const tagTreeAction = useTagTreeAction(db, toast)
+const tagTreeAction = useTagTreeAction(toast)
 
 const reports = ref<ReportWithTag[]>([])
 
@@ -45,7 +41,7 @@ const onSelectedTag = (tag?: Tag) => {
 
 const onRefresh = async () => {
   try {
-    reports.value = await reportAPI.getAll({
+    reports.value = await ReportAPI.getAll({
       sort: ['id', 'desc'],
     })
 

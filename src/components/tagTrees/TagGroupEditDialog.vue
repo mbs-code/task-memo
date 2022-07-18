@@ -39,8 +39,7 @@
 
 <script setup lang="ts">
 import { useConfirm } from 'primevue/useconfirm'
-import { FormTagGroup, useTagGroupAPI } from '~~/src/apis/useTagGroupAPI'
-import { Database } from '~~/src/databases/Database'
+import TagGroupAPI, { FormTagGroup } from '~~/src/apis/TagGroupAPI'
 import { TagGroup } from '~~/src/databases/models/TagGroup'
 
 const props = defineProps<{
@@ -55,8 +54,6 @@ const emit = defineEmits<{ // eslint-disable-line func-call-spacing
   (e: 'delete:tagGroup'): void,
 }>()
 
-const { db } = Database.getInstance()
-const tagGroupAPI = useTagGroupAPI(db)
 const toast = useToast()
 const confirm = useConfirm()
 
@@ -92,8 +89,8 @@ const onSave = async () => {
 
     const tagGroupId = props.tagGroup?.id
     const newTagGroup = tagGroupId
-      ? await tagGroupAPI.update(tagGroupId, data)
-      : await tagGroupAPI.create(data)
+      ? await TagGroupAPI.update(tagGroupId, data)
+      : await TagGroupAPI.create(data)
 
     const actStr = tagGroupId ? '更新' : '作成'
     toast.success(`タググループを${actStr}しました。 id=${newTagGroup.id}`)
@@ -110,7 +107,7 @@ const onDelete = () => {
     message: '消すぞ',
     accept: async () => {
       if (props.tagGroup?.id) {
-        await tagGroupAPI.remove(props.tagGroup.id)
+        await TagGroupAPI.remove(props.tagGroup.id)
         emit('delete:tagGroup')
         onClose()
       }
