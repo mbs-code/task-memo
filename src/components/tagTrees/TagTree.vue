@@ -47,7 +47,7 @@ const emit = defineEmits<{ // eslint-disable-line func-call-spacing
 }>()
 
 const tagStore = useTagStore()
-const isEdit = ref<boolean>(false)
+const isEdit = ref<boolean>(true)
 
 const showTagGroupEditDialog = ref<boolean>(false)
 const showTagEditDialog = ref<boolean>(false)
