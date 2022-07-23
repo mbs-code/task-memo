@@ -37,6 +37,7 @@ const reports = ref<ReportWithTag[]>([])
 const onRefresh = async () => {
   try {
     reports.value = await ReportAPI.getAll({
+      tagIds: selectedTags.value.map(t => t.id),
       sort: ['id', 'desc'],
     })
 
@@ -47,6 +48,7 @@ const onRefresh = async () => {
 }
 
 onMounted(async () => { await onRefresh() })
+watch(() => [...selectedTags.value], async () => { await onRefresh() })
 </script>
 
 <style scoped lang="scss">
