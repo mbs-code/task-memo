@@ -1,7 +1,10 @@
 <template>
   <div
     class="flex align-items-center gap-1"
-    :class="{ 'dragging': isDrag }"
+    :class="{
+      'dragging': isDrag,
+      'dragging': isSelected,
+    }"
     style="padding-left: 0.5rem"
     v-bind="$attrs"
   >
@@ -46,6 +49,7 @@ export default {
 const props = defineProps<{
   tag?: Tag,
   isDrag: boolean,
+  isSelected: boolean,
 }>()
 
 const name = computed(() => props.tag?.name ?? '-')
@@ -55,6 +59,7 @@ const fillColor = computed(() => props.tag?.color ?? '#4B4B4B')
 <style scoped>
 .disable-drag {
   pointer-events: none;
+  user-select: none;
 }
 
 .dragging {

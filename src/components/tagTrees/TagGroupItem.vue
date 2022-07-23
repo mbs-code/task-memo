@@ -1,5 +1,4 @@
 <template>
-  <!-- :class="{ 'bg-blue-300': isDrag, 'border-green-500': isEnter }" -->
   <div
     class="pl-1 border-3"
     :class="{
@@ -85,6 +84,7 @@ const fillColor = computed(() => '#4B4B4B')
 <style scoped lang="scss">
 .disable-drag {
   pointer-events: none;
+  user-select: none;
 }
 
 .tree-button {

@@ -24,41 +24,41 @@
         @dragover.prevent
       />
 
-      <div>
-        <template
-          v-for="(tag, idx) in tagTree.tags"
-          :key="`${nest}-t${idx}`"
-        >
-          <TagItem
-            :tag="tag"
-            :is-drag="draggedTag?.id === tag.id"
-            :draggable="!disabled"
-            @dragstart.stop="tagStart($event, tag)"
-            @dragend.stop="dragEnd"
-            @drop.stop="onDrop($event, 0, idx)"
-            @dragenter.prevent="isEnterTagId = idx"
-            @dragleave.prevent="isEnterTagId = null"
-            @dragover.prevent
-            @click="onClickTag(tag, tagTree)"
-          />
-          <div
-            class="drag-separator"
-            :class="{ 'drag-over': isEnterTagDivId === idx }"
-            @drop.stop="onDrop($event, 0, idx + 1)"
-            @dragenter.prevent="isEnterTagDivId = idx"
-            @dragleave.prevent="isEnterTagDivId = null"
-            @dragover.prevent
-          />
-        </template>
-      </div>
+      <template
+        v-for="(tag, idx) in tagTree.tags"
+        :key="`${nest}-t${idx}`"
+      >
+        <TagItem
+          :tag="tag"
+          :is-drag="draggedTag?.id === tag.id"
+          :is-selected="Boolean(selectedTags.find((t) => t.id === tag.id))"
+          :draggable="!disabled"
+          @dragstart.stop="tagStart($event, tag)"
+          @dragend.stop="dragEnd"
+          @drop.stop="onDrop($event, 0, idx)"
+          @dragenter.prevent="isEnterTagId = idx"
+          @dragleave.prevent="isEnterTagId = null"
+          @dragover.prevent
+          @click="onClickTag(tag, tagTree)"
+        />
 
-      <div
+        <div
+          class="drag-separator"
+          :class="{ 'drag-over': isEnterTagDivId === idx }"
+          @drop.stop="onDrop($event, 0, idx + 1)"
+          @dragenter.prevent="isEnterTagDivId = idx"
+          @dragleave.prevent="isEnterTagDivId = null"
+          @dragover.prevent
+        />
+      </template>
+
+      <template
         v-for="(group, idx) in tagTree.groups"
         :key="`${nest}-g${idx}`"
       >
         <TagTreeRender
-          class=""
           :tag-tree="group"
+          :selected-tags="selectedTags"
           :disabled="childDisabled"
           :nest="nest + 1"
           @delete:group="($1) => emit('delete:group', $1)"
@@ -73,7 +73,7 @@
           @dragleave.prevent="isEnterGroupId = null"
           @dragover.prevent
         />
-      </div>
+      </template>
     </div>
   </TagGroupItem>
 </template>
@@ -86,6 +86,7 @@ import { TagTreeItem } from '~~/src/store/useTagStore'
 
 const props = withDefaults(defineProps<{
   tagTree: TagTreeItem,
+  selectedTags: Tag[],
   disabled?: boolean,
   nest?: number
 }>(), {
@@ -120,23 +121,28 @@ const childDisabled = computed(() => {
 })
 
 const isRoot = computed(() => props.nest === 0)
+const enabled = computed(() => !props.disabled)
 
 ///
 
 const groupStart = (event: DragEvent, tagGroup: TagGroup) => {
-  event.dataTransfer.effectAllowed = 'move'
-  event.dataTransfer.dropEffect = 'move'
-  event.dataTransfer.setData('group-id', String(tagGroup.id))
+  if (!props.disabled) {
+    event.dataTransfer.effectAllowed = 'move'
+    event.dataTransfer.dropEffect = 'move'
+    event.dataTransfer.setData('group-id', String(tagGroup.id))
 
-  draggedGroup.value = tagGroup
+    draggedGroup.value = tagGroup
+  }
 }
 
 const tagStart = (event: DragEvent, tag: Tag) => {
-  event.dataTransfer.effectAllowed = 'move'
-  event.dataTransfer.dropEffect = 'move'
-  event.dataTransfer.setData('tag-id', String(tag.id))
+  if (!props.disabled) {
+    event.dataTransfer.effectAllowed = 'move'
+    event.dataTransfer.dropEffect = 'move'
+    event.dataTransfer.setData('tag-id', String(tag.id))
 
-  draggedTag.value = tag
+    draggedTag.value = tag
+  }
 }
 
 const onDrop = (event: DragEvent, insertGroupIndex: number, insertTagIndex: number) => {
