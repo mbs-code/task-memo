@@ -3,7 +3,9 @@ import { Database } from '~~/src/databases/Database'
 import { SearchModel, SystemColumns } from '~~/src/databases/DBUtil'
 import { Report, ReportWithTag } from '~~/src/databases/models/Report'
 
-export type SearchReport = SearchModel<Report>
+export type SearchReport = SearchModel<Report> & {
+  tagIds?: number[],
+}
 export type FormReport = Omit<Report, SystemColumns> & { tagNames: string[] }
 
 export class ReportAPI {
@@ -11,7 +13,21 @@ export class ReportAPI {
     // レポートを取得する
     const reports = await Database.getDB()
       .selectFrom('reports')
-      .selectAll()
+      .selectAll('reports')
+      .if(Boolean(params?.tagIds?.length), (qb) => {
+        let q = qb
+        for (const tagId of params.tagIds) {
+          q = q.whereExists(qqb =>
+            qqb.selectFrom('report_tags')
+              .select('id')
+              .whereRef('report_tags.report_id', '=', 'reports.id')
+              .where('report_tags.tag_id', '=', tagId)
+          )
+        }
+        return q
+      }
+
+      )
       .if(Boolean(params?.perPage), qb => qb.limit(params.perPage))
       .if(Boolean(params?.page), qb => qb.offset(params.page))
       .if(Boolean(params?.sort), qb => qb.orderBy(params.sort[0], params.sort[1]))

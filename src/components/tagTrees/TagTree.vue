@@ -1,13 +1,14 @@
 <template>
+  <div>
+    <InputSwitch v-model="isEdit" />
+    <i class="pi pi-pencil" />
+  </div>
+
   <TagTreeRender
     :tag-tree="tagStore.tagTree"
+    :selected-tags="_selectedTags"
     :disabled="!isEdit"
-  >
-    <template #header>
-      <InputSwitch v-model="isEdit" />
-      <i class="pi pi-pencil" />
-    </template>
-  </TagTreeRender>
+  />
 
   <TagGroupEditDialog
     v-model:visible="showTagGroupEditDialog"
@@ -41,10 +42,17 @@ export const onUpdateTagKey: InjectionKey<(tagId: number, targetGroup: TagGroup,
 </script>
 
 <script setup lang="ts">
-const emit = defineEmits<{ // eslint-disable-line func-call-spacing
-  (e: 'update'): void,
-  (e: 'select:tag', tag: Tag): void,
+const props = defineProps<{
+  selectedTags?: Tag[],
 }>()
+const emit = defineEmits<{ // eslint-disable-line func-call-spacing
+  (e: 'update:selectedTags', tags: Tag[]): void,
+}>()
+
+const _selectedTags = computed({
+  get: () => props.selectedTags ?? [],
+  set: (tags: Tag[]) => emit('update:selectedTags', tags)
+})
 
 const tagStore = useTagStore()
 const isEdit = ref<boolean>(false)
@@ -55,6 +63,11 @@ const showTagEditDialog = ref<boolean>(false)
 const selectedParentTagGroup = ref<TagGroup>() // 親要素
 const selectedTagGroup = ref<TagGroup>()
 const selectedTag = ref<Tag>()
+
+watch(isEdit, () => {
+  // 編集したらリセット
+  if (isEdit.value) { _selectedTags.value = [] }
+})
 
 const onClickTagGroup = (tagGroup?: TagGroup, parentTagGroup?: TagGroup) => {
   if (isEdit.value) {
@@ -70,7 +83,12 @@ const onClickTag = (tag?: Tag, parentTagGroup?: TagGroup) => {
     selectedParentTagGroup.value = parentTagGroup
     showTagEditDialog.value = true
   } else {
-    emit('select:tag', tag)
+    const hasIndex = _selectedTags.value.findIndex(t => t.id === tag?.id)
+    if (hasIndex >= 0) {
+      _selectedTags.value.splice(hasIndex, 1)
+    } else {
+      _selectedTags.value.push(tag)
+    }
   }
 }
 

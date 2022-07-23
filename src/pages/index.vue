@@ -1,6 +1,6 @@
 <template>
   <div>
-    <TagTree @select:tag="onSelectedTag" />
+    <TagTree v-model:selectedTags="selectedTags" />
 
     <Card class="m-2">
       <template #content>
@@ -31,15 +31,13 @@ import { useTagStore } from '~~/src/store/useTagStore'
 const tagStore = useTagStore()
 const toast = useToast()
 
+const selectedTags = ref<Tag[]>([])
 const reports = ref<ReportWithTag[]>([])
-
-const onSelectedTag = (tag?: Tag) => {
-  console.log(tag)
-}
 
 const onRefresh = async () => {
   try {
     reports.value = await ReportAPI.getAll({
+      tagIds: selectedTags.value.map(t => t.id),
       sort: ['id', 'desc'],
     })
 
@@ -50,6 +48,7 @@ const onRefresh = async () => {
 }
 
 onMounted(async () => { await onRefresh() })
+watch(() => [...selectedTags.value], async () => { await onRefresh() })
 </script>
 
 <style scoped lang="scss">
