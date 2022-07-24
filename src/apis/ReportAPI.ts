@@ -3,9 +3,12 @@ import { Database } from '~~/src/databases/Database'
 import { SearchModel, SystemColumns } from '~~/src/databases/DBUtil'
 import { Report, ReportWithTag } from '~~/src/databases/models/Report'
 
-export type SearchReport = SearchModel<Report> & {
+export type SearchReportParam = {
   tagIds?: number[],
+  text?: string,
 }
+
+export type SearchReport = SearchModel<Report> & SearchReportParam
 export type FormReport = Omit<Report, SystemColumns> & { tagNames: string[] }
 
 export class ReportAPI {

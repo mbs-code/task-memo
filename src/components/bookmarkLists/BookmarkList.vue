@@ -5,7 +5,7 @@
   >
     <BookmarkItem
       :bookmark="bookmark"
-      :is-selected="false"
+      :is-selected="isSelected(bookmark)"
       @click="onClickBookmark(bookmark)"
     />
   </template>
@@ -13,24 +13,37 @@
 
 <script setup lang="ts">
 import BookmarkAPI from '~~/src/apis/BookmarkAPI'
+import { SearchReportParam } from '~~/src/apis/ReportAPI'
 import { Bookmark } from '~~/src/databases/models/Bookmark'
 
 const props = defineProps<{
-  selectedBookmark?: Bookmark,
+  searchReportParam?: SearchReportParam,
 }>()
 const emit = defineEmits<{ // eslint-disable-line func-call-spacing
-  (e: 'update:selectedBookmark', bookmark: Bookmark): void,
+  (e: 'change:bookmark', bookmark?: Bookmark): void,
 }>()
 
-const _selectedBookmark = computed({
-  get: () => props.selectedBookmark,
-  set: (bookmark: Bookmark) => emit('update:selectedBookmark', bookmark)
-})
+const isSelected = (bookmark: Bookmark) => {
+  const param = props.searchReportParam
+  if (param) {
+    const sortIds = param?.tagIds ?? []
+    const bookIds = bookmark.json
+      ? (JSON.parse(bookmark.json)?.tagIds ?? [])
+      : []
+    if (sortIds.sort().toString() === bookIds.sort().toString()) {
+      return true
+    }
+    // TODO: search 未実装
+  }
+  return false
+}
 
 ///
 
 const toast = useToast()
 const bookmarks = ref<Bookmark[]>([])
+
+const selectedBookmark = ref<Bookmark>()
 
 const onRefresh = async () => {
   try {
@@ -44,10 +57,14 @@ const onRefresh = async () => {
 onMounted(async () => { await onRefresh() })
 
 const onClickBookmark = (bookmark: Bookmark) => {
-  if (bookmark.id !== _selectedBookmark.value?.id) {
-    _selectedBookmark.value = bookmark
+  if (bookmark.id !== selectedBookmark.value?.id) {
+    selectedBookmark.value = bookmark
   } else {
-    _selectedBookmark.value = null
+    selectedBookmark.value = null
   }
 }
+
+watch(() => selectedBookmark.value, () => {
+  emit('change:bookmark', selectedBookmark.value)
+})
 </script>

@@ -2,7 +2,10 @@
   <div>
     <Splitter style="background: unset !important;">
       <SplitterPanel class="panel-viewport">
-        <BookmarkList v-model:selectedBookmark="selectedBookmark" />
+        <BookmarkList
+          :search-report-param="reportParam"
+          @change:bookmark="onClickBookmark"
+        />
         <hr>
         <TagTree v-model:selectedTags="selectedTags" />
       </SplitterPanel>
@@ -29,7 +32,7 @@
 </template>
 
 <script setup lang="ts">
-import { ReportAPI } from '~~/src/apis/ReportAPI'
+import { ReportAPI, SearchReportParam } from '~~/src/apis/ReportAPI'
 import { Bookmark } from '~~/src/databases/models/Bookmark'
 import { ReportWithTag } from '~~/src/databases/models/Report'
 import { Tag } from '~~/src/databases/models/Tag'
@@ -39,13 +42,17 @@ const tagStore = useTagStore()
 const toast = useToast()
 
 const selectedTags = ref<Tag[]>([])
-const selectedBookmark = ref<Bookmark>()
 const reports = ref<ReportWithTag[]>([])
+
+const reportParam = computed<SearchReportParam>(() => ({
+  tagIds: selectedTags.value.map(t => t.id),
+  text: '',
+}))
 
 const onRefresh = async () => {
   try {
     reports.value = await ReportAPI.getAll({
-      tagIds: selectedTags.value.map(t => t.id),
+      ...reportParam,
       sort: ['id', 'desc'],
     })
 
@@ -57,14 +64,15 @@ const onRefresh = async () => {
 
 onMounted(async () => { await onRefresh() })
 watch(() => [...selectedTags.value], async () => { await onRefresh() })
-watch(() => selectedBookmark.value, () => {
-  const tagIds = selectedBookmark.value?.json
-    ? JSON.parse(selectedBookmark.value.json)?.tagIds
+
+const onClickBookmark = (bookmark?: Bookmark) => {
+  const tagIds = bookmark?.json
+    ? JSON.parse(bookmark.json)?.tagIds
     : []
   const tags = tagIds.map((tid: number) => tagStore.tags.find(t => t.id === tid))
 
   selectedTags.value = tags
-})
+}
 </script>
 
 <style scoped>

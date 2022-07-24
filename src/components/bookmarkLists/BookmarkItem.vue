@@ -1,8 +1,7 @@
 <template>
-  <div
-    class="flex align-items-center gap-1"
-    :class="{ 'dragging': isSelected }"
-    style="padding-left: 0.5rem"
+  <Button
+    class="flex align-items-center gap-1 panel-button"
+    :class="{ 'p-button-text p-button-plain': !isSelected }"
     v-bind="$attrs"
   >
     <svg
@@ -16,10 +15,8 @@
       xml:space="preserve"
     >
       <g>
-        <path
-          class="st0"
-          d="M463.511,0H27.022v512L256,361.971l228.978,150.023V0H463.511z M256,310.645L69.955,432.534V42.933h372.089
-      v389.601L256,310.645z"
+        <polygon
+          points="20.317,0 20.317,512 256,426.452 491.683,512 491.683,0 "
           :style="{ fill: fillColor }"
         />
       </g>
@@ -28,7 +25,7 @@
     <div class="flex-grow-1 disable-drag">
       {{ name }}
     </div>
-  </div>
+  </Button>
 </template>
 
 <script  lang="ts">

@@ -1,11 +1,7 @@
 <template>
-  <div
-    class="flex align-items-center gap-1"
-    :class="{
-      'dragging': isDrag,
-      'dragging': isSelected,
-    }"
-    style="padding-left: 0.5rem"
+  <Button
+    class="flex align-items-center gap-1 panel-button"
+    :class="{ 'p-button-text p-button-plain': !isSelected && !isDrag }"
     v-bind="$attrs"
   >
     <svg
@@ -34,7 +30,7 @@
     <div class="flex-grow-1 disable-drag">
       {{ name }}
     </div>
-  </div>
+  </Button>
 </template>
 
 <script  lang="ts">
@@ -60,9 +56,5 @@ const fillColor = computed(() => props.tag?.color ?? '#4B4B4B')
 .disable-drag {
   pointer-events: none;
   user-select: none;
-}
-
-.dragging {
-  background-color: var(--primary-color);
 }
 </style>
