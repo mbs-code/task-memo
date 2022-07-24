@@ -9,7 +9,7 @@ export type TagTreeItem = Tag & {
   tags: Tag[],
 }
 
-export const useTagStore = defineStore('todos', {
+export const useTagStore = defineStore('tags', {
   state: () => {
     return {
       tags: [] as Tag[],

@@ -1,6 +1,6 @@
 <template>
   <template
-    v-for="(bookmark, idx) in bookmarks"
+    v-for="(bookmark, idx) in bookmarkStore.bookmarks"
     :key="`b${idx}`"
   >
     <BookmarkItem
@@ -12,9 +12,9 @@
 </template>
 
 <script setup lang="ts">
-import BookmarkAPI from '~~/src/apis/BookmarkAPI'
 import { SearchReportParam } from '~~/src/apis/ReportAPI'
 import { Bookmark } from '~~/src/databases/models/Bookmark'
+import { useBookmarkStore } from '~~/src/store/useBookmarkStore'
 
 const props = defineProps<{
   searchReportParam?: SearchReportParam,
@@ -40,21 +40,9 @@ const isSelected = (bookmark: Bookmark) => {
 
 ///
 
-const toast = useToast()
-const bookmarks = ref<Bookmark[]>([])
+const bookmarkStore = useBookmarkStore()
 
 const selectedBookmark = ref<Bookmark>()
-
-const onRefresh = async () => {
-  try {
-    bookmarks.value = await BookmarkAPI.getAll({
-      sort: ['id', 'desc'],
-    })
-  } catch (err) {
-    toast.catchError(err)
-  }
-}
-onMounted(async () => { await onRefresh() })
 
 const onClickBookmark = (bookmark: Bookmark) => {
   if (bookmark.id !== selectedBookmark.value?.id) {
@@ -62,9 +50,7 @@ const onClickBookmark = (bookmark: Bookmark) => {
   } else {
     selectedBookmark.value = null
   }
-}
 
-watch(() => selectedBookmark.value, () => {
   emit('change:bookmark', selectedBookmark.value)
-})
+}
 </script>

@@ -15,6 +15,7 @@
 <script setup lang="ts">
 import { useTagStore } from '~~/src/store/useTagStore'
 import { Database } from '~~/src/databases/Database'
+import { useBookmarkStore } from '~~/src/store/useBookmarkStore'
 
 Database.debug = process.dev
 
@@ -24,8 +25,10 @@ const onReload = () => {
 }
 
 const tagStore = useTagStore()
+const bookmarkStore = useBookmarkStore()
 onMounted(() => {
   tagStore.init()
+  bookmarkStore.init()
 })
 </script>
 
