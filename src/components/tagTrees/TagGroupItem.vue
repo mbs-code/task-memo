@@ -37,21 +37,23 @@
         {{ name }}
       </div>
 
-      <Button
-        class="tree-button p-button-text p-button-success"
-        icon="pi pi-folder"
-        @click="emit('click:tagGroup')"
-      />
+      <template v-if="!disabled">
+        <Button
+          class="tree-button p-button-text p-button-success"
+          icon="pi pi-folder"
+          @click="emit('click:tagGroup')"
+        />
 
-      <Button
-        class="tree-button p-button-text p-button-success"
-        icon="pi pi-tag"
-        @click="emit('click:tag')"
-      />
+        <Button
+          class="tree-button p-button-text p-button-success"
+          icon="pi pi-tag"
+          @click="emit('click:tag')"
+        />
+      </template>
     </div>
 
     <div class="flex">
-      <div style="background-color: lightgrey; width: 2px; margin: 0 0.25rem;" />
+      <div style="background-color: lightgrey; min-width: 2px; margin: 0 0.25rem;" />
 
       <slot />
     </div>
@@ -69,6 +71,7 @@ export default {
 <script setup lang="ts">
 const props = defineProps<{
   tagGroup?: TagGroup,
+  disabled: boolean,
   isDrag: boolean,
   isEnter: boolean,
 }>()

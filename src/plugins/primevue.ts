@@ -14,6 +14,8 @@ import AutoComplete from 'primevue/autocomplete'
 import Checkbox from 'primevue/checkbox'
 import InputSwitch from 'primevue/inputswitch'
 import InputNumber from 'primevue/inputnumber'
+import Splitter from 'primevue/splitter'
+import SplitterPanel from 'primevue/splitterpanel'
 import Toast from 'primevue/toast'
 import Dialog from 'primevue/dialog'
 import ConfirmDialog from 'primevue/confirmdialog'
@@ -33,6 +35,8 @@ export default defineNuxtPlugin((nuxtApp) => {
   nuxtApp.vueApp.component('Checkbox', Checkbox)
   nuxtApp.vueApp.component('InputSwitch', InputSwitch)
   nuxtApp.vueApp.component('InputNumber', InputNumber)
+  nuxtApp.vueApp.component('Splitter', Splitter)
+  nuxtApp.vueApp.component('SplitterPanel', SplitterPanel)
   nuxtApp.vueApp.component('Toast', Toast)
   nuxtApp.vueApp.component('Dialog', Dialog)
   nuxtApp.vueApp.component('ConfirmDialog', ConfirmDialog)

@@ -2,9 +2,10 @@
   <div>
     <AppHeader @reload="onReload" />
 
-    <div class="p-2 main-viewport">
+    <NuxtPage :key="key" />
+    <!-- <div class="main-viewport">
       <NuxtPage :key="key" />
-    </div>
+    </div> -->
 
     <Toast />
     <ConfirmDialog />
@@ -30,7 +31,6 @@ onMounted(() => {
 
 <style scoped>
 .main-viewport {
-  overflow-y: scroll;
   height: calc(100vh - 64px);
 }
 </style>

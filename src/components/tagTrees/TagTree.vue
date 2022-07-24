@@ -1,7 +1,7 @@
 <template>
-  <div>
+  <div class="flex align-items-center">
+    <i class="pr-2 pi pi-pencil" />
     <InputSwitch v-model="isEdit" />
-    <i class="pi pi-pencil" />
   </div>
 
   <TagTreeRender

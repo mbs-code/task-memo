@@ -1,6 +1,7 @@
 <template>
   <TagGroupItem
     :tag-group="tagTree"
+    :disabled="disabled"
     :is-drag="Boolean(draggedGroup)"
     :is-enter="Boolean(isEnterArea) || Boolean(isEnterTop) || isEnterGroupId !== null || isEnterTagId !== null || isEnterTagDivId !== null"
     :draggable="!disabled"
@@ -146,10 +147,8 @@ const tagStart = (event: DragEvent, tag: Tag) => {
 }
 
 const onDrop = (event: DragEvent, insertGroupIndex: number, insertTagIndex: number) => {
-  console.log('drop')
   const tagId = event.dataTransfer.getData('tag-id') ?? null
   const groupId = event.dataTransfer.getData('group-id') ?? null
-  console.log('drop', tagId, groupId)
 
   if (tagId) {
     onUpdateTag(Number(tagId), props.tagTree, insertTagIndex)

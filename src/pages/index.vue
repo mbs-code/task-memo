@@ -1,24 +1,28 @@
 <template>
   <div>
-    <TagTree v-model:selectedTags="selectedTags" />
+    <Splitter style="background: unset !important;">
+      <SplitterPanel class="panel-viewport">
+        <TagTree v-model:selectedTags="selectedTags" />
+      </SplitterPanel>
 
-    <Card class="m-2">
-      <template #content>
-        <ReportEditBox
-          disable-close
+      <SplitterPanel class="panel-viewport">
+        <Card class="m-2">
+          <template #content>
+            <ReportEditBox
+              disable-close
+              @reload="onRefresh"
+            />
+          </template>
+        </Card>
+
+        <ReportPanel
+          v-for="report of reports"
+          :key="report.id"
+          :report="report"
           @reload="onRefresh"
         />
-      </template>
-    </Card>
-
-    <ReportPanel
-      v-for="report of reports"
-      :key="report.id"
-      :report="report"
-      @reload="onRefresh"
-    />
-
-    <Button class="float-button" label="+" />
+      </SplitterPanel>
+    </Splitter>
   </div>
 </template>
 
@@ -51,11 +55,11 @@ onMounted(async () => { await onRefresh() })
 watch(() => [...selectedTags.value], async () => { await onRefresh() })
 </script>
 
-<style scoped lang="scss">
-.float-button {
-  position: absolute;
-  z-index: 100;
-  bottom: 10px;
-  right: 10px;
+<style scoped>
+.panel-viewport {
+  height: calc(100vh - 66px);
+  overflow-y: scroll;
+  padding-top: 0.5rem;
+  padding-left: 0.5rem;
 }
 </style>
