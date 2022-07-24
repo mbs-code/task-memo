@@ -36,7 +36,8 @@ export default class BookmarkAPI {
     const { insertId } = await Database.getDB()
       .insertInto('bookmarks')
       .values({
-        text: form.text,
+        name: form.name,
+        json: form.json,
         color: form.color || null,
         priority: form.priority ?? 0,
         created_at: new Date(),
@@ -52,7 +53,8 @@ export default class BookmarkAPI {
     const { numUpdatedRows } = await Database.getDB()
       .updateTable('bookmarks')
       .set({
-        text: form.text,
+        name: form.name,
+        json: form.json,
         color: form.color || null,
         priority: form.priority ?? 0,
         updated_at: new Date(),

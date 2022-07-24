@@ -1,6 +1,7 @@
 export interface Bookmark {
   id: number
-  text: string
+  name: string
+  json: string // json value
   color?: string
   priority: number // default
 

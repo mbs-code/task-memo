@@ -45,7 +45,8 @@ export async function up (db: Kysely<unknown>): Promise<void> {
   await db.schema
     .createTable('bookmarks')
     .addColumn('id', 'integer', col => col.primaryKey())
-    .addColumn('text', 'text', col => col.notNull())
+    .addColumn('name', 'text', col => col.notNull())
+    .addColumn('json', 'text', col => col.notNull())
     .addColumn('color', 'text')
     .addColumn('priority', 'integer', col => col.notNull().defaultTo(0))
     .addColumn('created_at', 'datetime', col => col.notNull())

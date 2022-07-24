@@ -2,6 +2,8 @@
   <div>
     <Splitter style="background: unset !important;">
       <SplitterPanel class="panel-viewport">
+        <BookmarkList v-model:selectedBookmark="selectedBookmark" />
+        <hr>
         <TagTree v-model:selectedTags="selectedTags" />
       </SplitterPanel>
 
@@ -28,6 +30,7 @@
 
 <script setup lang="ts">
 import { ReportAPI } from '~~/src/apis/ReportAPI'
+import { Bookmark } from '~~/src/databases/models/Bookmark'
 import { ReportWithTag } from '~~/src/databases/models/Report'
 import { Tag } from '~~/src/databases/models/Tag'
 import { useTagStore } from '~~/src/store/useTagStore'
@@ -36,6 +39,7 @@ const tagStore = useTagStore()
 const toast = useToast()
 
 const selectedTags = ref<Tag[]>([])
+const selectedBookmark = ref<Bookmark>()
 const reports = ref<ReportWithTag[]>([])
 
 const onRefresh = async () => {
@@ -53,6 +57,14 @@ const onRefresh = async () => {
 
 onMounted(async () => { await onRefresh() })
 watch(() => [...selectedTags.value], async () => { await onRefresh() })
+watch(() => selectedBookmark.value, () => {
+  const tagIds = selectedBookmark.value?.json
+    ? JSON.parse(selectedBookmark.value.json)?.tagIds
+    : []
+  const tags = tagIds.map((tid: number) => tagStore.tags.find(t => t.id === tid))
+
+  selectedTags.value = tags
+})
 </script>
 
 <style scoped>

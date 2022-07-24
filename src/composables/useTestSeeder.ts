@@ -1,5 +1,6 @@
 /* eslint-disable @typescript-eslint/no-unused-vars */
 
+import BookmarkAPI from '~~/src/apis/BookmarkAPI'
 import { ReportAPI } from '~~/src/apis/ReportAPI'
 import TagAPI from '~~/src/apis/TagAPI'
 import TagGroupAPI from '~~/src/apis/TagGroupAPI'
@@ -95,6 +96,24 @@ export const useTestSeeder = () => {
     const reportD = await ReportAPI.create({
       text: 'タイトルのみ',
       tagNames: [],
+    })
+
+    ///
+
+    const bookmarkA = await BookmarkAPI.create({
+      name: 'ブックマークA',
+      json: JSON.stringify({
+        tagIds: [tagA.id, tagB.id],
+        search: 'た',
+      }),
+    })
+
+    const bookmarkB = await BookmarkAPI.create({
+      name: 'ブックマークB',
+      json: JSON.stringify({
+        tagIds: [tagC.id, tagD.id],
+        search: null,
+      }),
     })
   }
 
