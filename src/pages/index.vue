@@ -52,7 +52,7 @@ const reportParam = computed<SearchReportParam>(() => ({
 const onRefresh = async () => {
   try {
     reports.value = await ReportAPI.getAll({
-      ...reportParam,
+      ...reportParam.value,
       sort: ['id', 'desc'],
     })
 
