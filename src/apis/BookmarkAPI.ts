@@ -69,6 +69,23 @@ export default class BookmarkAPI {
     return await this.get(bookmarkId)
   }
 
+  public static async updateSort (bookmarkId: number, priority?: number): Promise<Bookmark> {
+    // ソート情報を更新する
+    const { numUpdatedRows } = await Database.getDB()
+      .updateTable('bookmarks')
+      .set({
+        priority: priority ?? 0,
+      })
+      .where('id', '=', bookmarkId)
+      .executeTakeFirst()
+
+    if (Number(numUpdatedRows) === 0) {
+      throw new Error('no result')
+    }
+
+    return await this.get(bookmarkId)
+  }
+
   public static async remove (bookmarkId: number): Promise<boolean> {
     // ブックマークを削除する
     const { numDeletedRows } = await Database.getDB()

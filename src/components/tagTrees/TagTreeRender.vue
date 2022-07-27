@@ -122,7 +122,6 @@ const childDisabled = computed(() => {
 })
 
 const isRoot = computed(() => props.nest === 0)
-const enabled = computed(() => !props.disabled)
 
 ///
 
