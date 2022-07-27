@@ -28,9 +28,8 @@ export class ReportAPI {
           )
         }
         return q
-      }
-
-      )
+      })
+      .if(Boolean(params?.text), qb => qb.where('text', 'like', `%${params.text}%`))
       .if(Boolean(params?.perPage), qb => qb.limit(params.perPage))
       .if(Boolean(params?.page), qb => qb.offset(params.page))
       .if(Boolean(params?.sort), qb => qb.orderBy(params.sort[0], params.sort[1]))

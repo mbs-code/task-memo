@@ -46,15 +46,17 @@
 </template>
 
 <script setup lang="ts">
+import { fromJSON } from 'postcss'
 import { useConfirm } from 'primevue/useconfirm'
 import BookmarkAPI, { FormBookmark } from '~~/src/apis/BookmarkAPI'
+import { SearchReportParam } from '~~/src/apis/ReportAPI'
 import { Bookmark } from '~~/src/databases/models/Bookmark'
 import { TagGroup } from '~~/src/databases/models/TagGroup'
 
 const props = defineProps<{
   visible: boolean,
   bookmark?: Bookmark,
-  parentTagGroup?: TagGroup,
+  searchReportParam?: SearchReportParam,
 }>()
 
 const emit = defineEmits<{ // eslint-disable-line func-call-spacing
@@ -97,6 +99,13 @@ const onSave = async () => {
 
   try {
     const data: FormBookmark = { ...form }
+
+    // bookmark の指定が無ければ json を作る
+    if (!props.bookmark) {
+      data.json = props.searchReportParam
+        ? JSON.stringify(props.searchReportParam)
+        : null
+    }
 
     const bookmarkId = props.bookmark?.id
     const newBookmark = bookmarkId

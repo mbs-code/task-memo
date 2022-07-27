@@ -2,11 +2,18 @@
   <div>
     <Splitter style="background: unset !important;">
       <SplitterPanel class="panel-viewport">
+        <InputText v-model="searchText" @keydown.enter="onRefresh" />
+        <Button icon="pi pi-search" @click="onRefresh" />
+
+        <hr>
+
         <BookmarkList
           :search-report-param="reportParam"
           @change:bookmark="onClickBookmark"
         />
+
         <hr>
+
         <TagTree v-model:selectedTags="selectedTags" />
       </SplitterPanel>
 
@@ -44,9 +51,11 @@ const toast = useToast()
 const selectedTags = ref<Tag[]>([])
 const reports = ref<ReportWithTag[]>([])
 
+const searchText = ref<string>()
+
 const reportParam = computed<SearchReportParam>(() => ({
   tagIds: selectedTags.value.map(t => t.id),
-  text: '',
+  text: searchText.value,
 }))
 
 const onRefresh = async () => {
@@ -66,12 +75,14 @@ onMounted(async () => { await onRefresh() })
 watch(() => [...selectedTags.value], async () => { await onRefresh() })
 
 const onClickBookmark = (bookmark?: Bookmark) => {
-  const tagIds = bookmark?.json
-    ? JSON.parse(bookmark.json)?.tagIds
-    : []
-  const tags = tagIds.map((tid: number) => tagStore.tags.find(t => t.id === tid))
+  const searchValues = bookmark?.json ? JSON.parse(bookmark.json) : {}
 
+  const tagIds = searchValues?.tagIds ?? []
+  const tags = tagIds.map((tid: number) => tagStore.tags.find(t => t.id === tid))
   selectedTags.value = tags
+
+  const text = searchValues?.text ?? null
+  searchText.value = text
 }
 </script>
 

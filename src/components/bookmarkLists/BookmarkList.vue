@@ -2,6 +2,8 @@
   <div class="flex align-items-center">
     <i class="pr-2 pi pi-pencil" />
     <InputSwitch v-model="isEdit" />
+
+    <Button icon="pi pi-save" label="検索結果を保存" @click="onClickCreate" />
   </div>
 
   <BookmarkRenderer
@@ -14,6 +16,7 @@
   <BookmarkEditDialog
     v-model:visible="showBookmarkEditDialog"
     :bookmark="selectedBookmark"
+    :search-report-param="searchReportParam"
     @update:bookmark="bookmarkStore.init()"
     @delete:bookmark="bookmarkStore.init()"
   />
@@ -44,6 +47,11 @@ const isEdit = ref<boolean>(false)
 const showBookmarkEditDialog = ref<boolean>(false)
 
 const selectedBookmark = ref<Bookmark>()
+
+const onClickCreate = () => {
+  selectedBookmark.value = null
+  showBookmarkEditDialog.value = true
+}
 
 const onClickBookmark = (bookmark: Bookmark) => {
   if (isEdit.value) {

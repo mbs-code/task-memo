@@ -99,14 +99,16 @@ const dragEnd = () => {
 const isSelected = (bookmark: Bookmark) => {
   const param = props.searchReportParam
   if (param) {
+    const searchValues = bookmark?.json ? JSON.parse(bookmark.json) : {}
+
     const sortIds = param?.tagIds ?? []
-    const bookIds = bookmark.json
-      ? (JSON.parse(bookmark.json)?.tagIds ?? [])
-      : []
+    const bookIds = searchValues?.tagIds ?? []
     if (sortIds.sort().toString() === bookIds.sort().toString()) {
-      return true
+      // タグが一致していたらテキストも一致しているか確認する
+      const paramText = param?.text ?? ''
+      const searchText = searchValues?.text ?? ''
+      return paramText === searchText
     }
-    // TODO: search 未実装
   }
   return false
 }
