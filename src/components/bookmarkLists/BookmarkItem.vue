@@ -23,7 +23,7 @@
     </svg>
 
     <div class="flex-grow-1 disable-drag">
-      {{ name }} {{ bookmark?.json }}
+      {{ name }}
     </div>
   </Button>
 </template>
