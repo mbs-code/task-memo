@@ -1,7 +1,18 @@
 <template>
-  <div class="flex align-items-center">
-    <i class="pr-2 pi pi-pencil" />
-    <InputSwitch v-model="isEdit" />
+  <div class="flex align-items-center pr-1">
+    <span>▶ タグ</span>
+
+    <div class="flex-grow-1" />
+
+    <Button
+      class="panel-button"
+      :class="{
+        'p-button-text p-button-secondary': !isEdit,
+        'p-button-success': isEdit,
+      }"
+      icon="pi pi-pencil"
+      @click="isEdit = !isEdit"
+    />
   </div>
 
   <TagTreeRender

@@ -1,8 +1,10 @@
 <template>
   <div style="padding: 3px">
     <div
-      class="drag-separator"
-      :class="{ 'drag-over': isEnterTop }"
+      :class="{
+        'drag-separator': !disabled,
+        'drag-over': isEnterTop,
+      }"
       @drop.stop="onDrop($event, 0)"
       @dragenter.prevent="isEnterTop = true"
       @dragleave.prevent="isEnterTop = false"

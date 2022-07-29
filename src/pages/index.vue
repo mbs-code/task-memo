@@ -1,7 +1,7 @@
 <template>
   <div>
     <Splitter style="background: unset !important;">
-      <SplitterPanel class="panel-viewport">
+      <SplitterPanel class="panel-viewport" :size="10">
         <InputText v-model="searchText" @keydown.enter="onRefresh" />
         <Button icon="pi pi-search" @click="onRefresh" />
 

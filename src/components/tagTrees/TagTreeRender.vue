@@ -17,8 +17,10 @@
   >
     <div class="flex-grow-1">
       <div
-        class="drag-separator"
-        :class="{ 'drag-over': isEnterTop }"
+        :class="{
+          'drag-separator': !disabled,
+          'drag-over': isEnterTop,
+        }"
         @drop.stop="onDrop($event, 0, 0)"
         @dragenter.prevent="isEnterTop = true"
         @dragleave.prevent="isEnterTop = false"
@@ -44,8 +46,10 @@
         />
 
         <div
-          class="drag-separator"
-          :class="{ 'drag-over': isEnterTagDivId === idx }"
+          :class="{
+            'drag-separator': !disabled,
+            'drag-over': isEnterTagDivId === idx,
+          }"
           @drop.stop="onDrop($event, 0, idx + 1)"
           @dragenter.prevent="isEnterTagDivId = idx"
           @dragleave.prevent="isEnterTagDivId = null"
@@ -67,8 +71,10 @@
         />
 
         <div
-          class="drag-separator"
-          :class="{ 'drag-over': isEnterGroupId === idx }"
+          :class="{
+            'drag-separator': !disabled,
+            'drag-over': isEnterGroupId === idx,
+          }"
           @drop.prevent="onDrop($event, idx + 1, tagTree.tags.length)"
           @dragenter.prevent="isEnterGroupId = idx"
           @dragleave.prevent="isEnterGroupId = null"

@@ -49,6 +49,10 @@ html {
 // 左パネルのボタン
 .panel-button {
   padding: 0 0.5rem;
-  width: 100%;
   text-align: left;
+
+  &.p-button-icon-only {
+    padding: 0 0.5rem;
+    width: inherit;
+  }
 }
